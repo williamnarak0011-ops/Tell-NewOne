@@ -1,0 +1,1705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tell: Lulu and the Yeti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+:root {
+  --bg: #05070b;
+  --panel: #0d121c;
+  --line: #22324a;
+  --fg: #e9f3ff;
+  --muted: #8094ad;
+  --red: #ff8a2a;
+  --red2: #8a3a12;
+  --gold: #8fe3ff;
+  --gold2: #2f6f8f;
+  --blue: #7fa8d8;
+  --cut: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "VT323", monospace; font-size: 21px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.wrap { width: 100vw; margin: 0 auto; padding: 0 0 8px; }
+header { display: flex; align-items: baseline; gap: 14px; padding: 6px 12px; }
+header h1 { font-family: "Press Start 2P", monospace; font-size: 26px; margin: 0; letter-spacing: 6px; }
+header h1 span { color: var(--red); }
+header .sub { color: var(--muted); letter-spacing: 3px; text-transform: uppercase; font-size: 13px; }
+header .sp { margin-left: auto; }
+.hb { background: transparent; border: 1px solid var(--line); padding: 4px 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+.hb:hover { color: var(--fg); border-color: var(--gold2); }
+.stage { position: relative; background: #050608; width: min(100vw, calc((100vh - 300px) * 2.3077)); margin: 0 auto; }
+canvas { display: block; width: 100%; height: auto; cursor: default; image-rendering: pixelated; }
+canvas.pointer { cursor: pointer; }
+.hud { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
+.hp { width: 38%; color: #e9f3ff; }
+.hp.r { text-align: right; }
+.hp .nm { font-family: "Press Start 2P", monospace; font-size: 15px; line-height: 1.6; letter-spacing: 2px; text-transform: uppercase; pointer-events: auto; cursor: pointer; }
+.hp .nm:hover { color: var(--red); }
+.hp .bar { height: 16px; background: #121a28; border: 2px solid #e9f3ff; position: relative; margin: 3px 0; }
+.hp.r .bar { transform: scaleX(-1); }
+.hp .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: #8fe3ff; transition: width .3s steps(6); }
+.hp .bar b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--red); transition: width .9s .25s; opacity: .55; }
+.hp .row { display: flex; gap: 10px; align-items: center; font-size: 22px; white-space: nowrap; }
+.hp.r .row { justify-content: flex-end; }
+.lt { display: inline-flex; gap: 4px; }
+.lt span { width: 10px; height: 10px; border: 2px solid #ffd23a; }
+.lt span.on { background: #ffd23a; }
+.turnbig { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: "Press Start 2P", monospace; color: #f1e2c6; font-size: 12px; letter-spacing: 2px; }
+.tip { display: none; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); color: #8094ad; font-size: 17px; letter-spacing: 1px; pointer-events: none; }
+.panel { margin-top: 10px; display: grid; grid-template-columns: 1fr 340px; gap: 12px; }
+.moves { background: var(--panel);  padding: 12px 14px 14px; }
+.grp { display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px; flex-wrap: wrap; }
+.grp .lbl { width: 86px; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); align-self: center; }
+.mv { position: relative; min-width: 128px; text-align: left; background: #111a28; border: 2px solid var(--line); padding: 6px 10px; }
+.mv b { display: block; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.8; }
+.mv small { font-size: 16px; color: var(--muted); }
+.mv.t-move { border-left: 3px solid var(--blue); }
+.mv.t-atk { border-left: 3px solid var(--red); }
+.mv.t-spc { border-left: 3px solid var(--gold); }
+.mv.sel { background: #143047; border-color: var(--gold); }
+.mv:disabled { opacity: .35; cursor: not-allowed; }
+.mv .why { position: absolute; right: 8px; bottom: 3px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #f2a59f; }
+.opt { display: flex; align-items: center; gap: 14px; min-height: 44px; border-top: 1px solid #2a2120; padding-top: 10px; margin-top: 4px; }
+.opt .desc { flex: 1; color: #cdbfb2; font-size: 15px; }
+.opt input[type=range] { width: 220px; accent-color: var(--gold); }
+.opt .val {  font-size: 13px; color: var(--gold); width: 80px; }
+.go { background: var(--red); color: #05070b; border: 0; padding: 12px 20px; font-family: "Press Start 2P", monospace; font-size: 13px; text-transform: uppercase; box-shadow: 4px 4px 0 #7c1c18; }
+.go:disabled { background: #3a2a28; color: #7a6a62; cursor: default; }
+.side { background: var(--panel);  padding: 10px 12px; display: flex; flex-direction: column; }
+.side h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.log { flex: 1; height: 190px; overflow: auto; font-size: 14px; line-height: 1.3; }
+.log p { margin: 0 0 3px; color: #cdbfb2; }
+.log p.t { color: var(--gold); letter-spacing: 2px; text-transform: uppercase; font-size: 12px; margin-top: 6px; }
+.log p.bad { color: #f2a59f; }
+.log p.emo { color: #c4b0ea; }
+.insp { position: absolute; top: 46px; width: 420px; max-height: calc(100% - 56px); overflow: auto; background: linear-gradient(180deg, #1c1514, #0f0c0c); color: var(--fg); border: 1px solid var(--red2); box-shadow: 0 10px 40px rgba(0,0,0,.5);  padding: 14px 16px 16px; z-index: 5; }
+.insp[hidden] { display: none; }
+.insp.left { left: 14px; }
+.insp.right { right: 14px; }
+.insp .x { position: absolute; right: 12px; top: 8px; background: none; border: 0; color: var(--muted); font-size: 22px; }
+.insp h2 { margin: 0; font-family: "Press Start 2P", monospace; font-size: 16px; line-height: 1.6; text-transform: uppercase; }
+.insp h2 small {  font-style: italic; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 17px; margin-left: 8px; }
+.insp .now { margin: 8px 0; padding: 8px 10px; border: 1px solid var(--gold2); background: rgba(217,164,65,.08); }
+.insp .now .k { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+.insp .now .e { font-family: "Press Start 2P", monospace; font-size: 14px; line-height: 1.8; text-transform: uppercase; }
+.insp .now .p { font-size: 16px; color: #e6dacb; }
+.insp .san { position: relative; height: 12px; margin: 6px 0 2px; background: linear-gradient(90deg, #2f4b66, #232a33 33%, #2a2120 50%, #3b2a1a 67%, #6b2a1d); }
+.insp .san .m { position: absolute; top: -3px; width: 2px; height: 18px; background: var(--fg); box-shadow: 0 0 6px var(--fg); }
+.insp .san .tk { position: absolute; top: 0; width: 1px; height: 100%; background: rgba(0,0,0,.7); }
+.insp h4 { margin: 12px 0 4px; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.insp .emo { display: grid; grid-template-columns: 130px 1fr; gap: 8px; padding: 4px 6px; font-size: 14px; opacity: .6; border-left: 2px solid transparent; }
+.insp .emo.on { opacity: 1; border-left-color: var(--gold); background: rgba(255,255,255,.03); }
+.insp .emo b { letter-spacing: 1px; text-transform: uppercase; }
+.insp .emo i { display: block; font-style: normal;  font-size: 10px; color: var(--muted); }
+.insp .sk { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 3px 6px; font-size: 14px; border-left: 2px solid var(--line); margin-bottom: 2px; }
+.insp .sk.off { opacity: .35; text-decoration: line-through; }
+.insp .sk span {  font-size: 11px; color: var(--muted); }
+.insp .stt {  font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+.overlay { position: fixed; inset: 0; background: rgba(6,5,5,.88); display: grid; place-items: center; z-index: 10; padding: 16px; }
+.overlay[hidden] { display: none; }
+.sheet { max-width: 620px; background: linear-gradient(180deg, #1e1817, #121010);  padding: 24px 28px; border-top: 3px solid var(--red); }
+.sheet h2 { font-family: "Press Start 2P", monospace; font-size: 26px; margin: 0 0 4px; letter-spacing: 4px; }
+.sheet h2 em { color: var(--red); font-style: normal; }
+.sheet p, .sheet li { font-size: 17px; line-height: 1.4; color: #d7cabd; }
+.sheet ul { padding-left: 20px; }
+.sheet .row { display: flex; gap: 10px; margin-top: 14px; }
+.sheet table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 16px; }
+.sheet td { padding: 4px 6px; border-bottom: 1px solid #2c2322; }
+.sheet td:last-child { text-align: right;  color: var(--gold); }
+@media (max-width: 900px) { .panel { grid-template-columns: 1fr; } .insp { width: calc(100% - 28px); } }
+.hp.r .bar i { background: #ff8a2a; }
+.hp .row .ch { color: #8fe3ff; }
+.insp { background: linear-gradient(180deg, #0f1726, #070a12) !important; border-color: #2f6f8f !important; }
+.insp.yeti { border-color: #8a3a12 !important; }
+.insp .now { border-color: #2f6f8f !important; background: rgba(143,227,255,.07) !important; }
+.insp .now .k { color: #8fe3ff !important; }
+.insp .san { background: linear-gradient(90deg, #2f4b66, #1b2433 33%, #182030 50%, #3b2a1a 67%, #6b3a1d) !important; }
+.mv small.no { color: #ffb07a; }
+.log p.bad { color: #ffb07a; }
+.log p.emo { color: #9fdcff; }
+.log p.t { color: #ffd23a; }
+
+.enemy { margin-top: 10px; border-top: 1px solid #22324a; padding-top: 8px; }
+.enemy .lbl { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #ff8a2a; margin-bottom: 6px; }
+.enemy .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.es { background: #1a1210; border: 2px solid #4a2a18; padding: 4px 8px; text-align: left; min-width: 118px; }
+.es b { display: block; font-family: "Press Start 2P", monospace; font-size: 9px; line-height: 1.8; }
+.es small { font-size: 15px; color: #b08a70; }
+.es:hover { border-color: #ff8a2a; }
+.es.sel { background: #3a1e10; border-color: #ff8a2a; }
+.es.off { opacity: .5; }
+.card { margin-top: 8px; padding: 8px 10px; background: #120d0b; border: 1px solid #4a2a18; font-size: 16px; line-height: 1.3; }
+.card.lulu { background: #0b1220; border-color: #2f6f8f; }
+.card h5 { margin: 0 0 4px; font-family: "Press Start 2P", monospace; font-size: 11px; line-height: 1.7; text-transform: uppercase; }
+.card .fb { position: relative; height: 16px; background: #0b101a; border: 1px solid #22324a; margin: 4px 0; display: flex; }
+.card .fb span { display: block; height: 100%; }
+.card .fb .s { background: #ffd23a; }
+.card .fb .a { background: #ff5a3a; }
+.card .fb .r { background: #3d5f8f; }
+.card .kv { display: flex; flex-wrap: wrap; gap: 4px 16px; color: #cdbfb2; }
+.card .kv b { color: #ffd23a; font-weight: 400; }
+.card .no { color: #ffb07a; }
+.insp .sk.click { cursor: pointer; }
+.insp .sk.click:hover { background: rgba(255,255,255,.06); }
+.insp .sk.pk { border-left-color: #ff8a2a; background: rgba(255,138,42,.08); }
+
+.dock { width: min(100vw, calc((100vh - 300px) * 2.3077)); margin: 0 auto; display: grid; grid-template-columns: 1fr 300px 1fr; gap: 10px; align-items: start; background: #05070b; padding: 8px 12px 10px; border-top: 2px solid #fff; position: relative; }
+.dock .grps { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: flex-start; }
+.dock .grps.r { justify-content: flex-end; }
+.dock .grp { display: block; margin: 0; }
+.dock .gl { font-size: 19px; letter-spacing: 1px; color: #6b7480; text-align: center; margin-bottom: 3px; white-space: nowrap; min-width: 60px; }
+.dock .gl.on { color: #4fe3ff; font-size: 15px; }
+.dock .gl { max-width: 112px; overflow: hidden; text-overflow: ellipsis; }
+.dock .grps.r .gl.on { color: #ff8a2a; }
+.dock .icons { display: grid; grid-template-columns: repeat(3, 34px); gap: 4px; justify-content: center; }
+.ic { width: 34px; height: 34px; padding: 3px; background: #0a0d14; border: 2px solid #1d2635; display: grid; place-items: center; }
+.ic svg { width: 24px; height: 24px; display: block; }
+.ic.c-Attack { color: #ffd23a; } .ic.c-Special { color: #ff4a4a; } .ic.c-Defense, .ic.c-Movement { color: #e9f3ff; }
+.ic:hover { border-color: #8fa4c4; }
+.ic.sel { border-color: #4fe3ff; background: #0f2230; }
+.grps.r .ic.sel { border-color: #ff8a2a; background: #2a1608; }
+.ic.off { opacity: .28; }
+.dock .mid { text-align: center; }
+.dock .selname { font-size: 24px; color: #4fe3ff; min-height: 26px; letter-spacing: 1px; }
+.dock .desc { color: #aab4c4; font-size: 17px; line-height: 1.15; min-height: 40px; margin: 2px 0 6px; }
+.dock .opt { display: block; border: 0; padding: 0; margin: 0; min-height: 0; }
+.dock .opt input[type=range] { width: 200px; }
+.dock .go { width: 100%; padding: 10px 8px; margin-top: 6px; font-size: 12px; }
+.card { position: absolute; bottom: calc(100% + 6px); width: 340px; z-index: 5; margin: 0; background: rgba(8,10,16,.96); }
+#mpeek, #epeek { display: contents; }
+#epeek .card { right: 12px; }
+#mpeek .card { left: 12px; }
+.logbox { position: absolute; left: 8px; top: 120px; width: 270px; background: rgba(0,0,0,.45); border: 1px solid #1d2635; z-index: 3; }
+.logbox h3 { margin: 0; padding: 3px 8px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #7f8ea6; cursor: pointer; display: flex; justify-content: space-between; font-weight: 400; }
+.logbox .log { height: 150px; padding: 0 8px 6px; font-size: 15px; }
+.logbox.min .log { display: none; }
+/* v2: playtest feedback */
+.hp .who { font-size: 11px; letter-spacing: 2px; padding: 0 4px; margin-right: 10px; vertical-align: 2px; border: 1px solid currentColor; }
+.hp .who.you { color: #4fe3ff; } .hp .who.cpu { color: #ff8a2a; }
+.sanbar { position: relative; height: 8px; margin: 4px 0 0; background: linear-gradient(90deg, #2f4b66 0, #2f4b66 33%, #1b2433 33%, #1b2433 67%, #6b3a1d 67%); border: 1px solid #3a4a62; pointer-events: auto; cursor: pointer; }
+.hp.r .sanbar { transform: scaleX(1); }
+.sanbar .m { position: absolute; top: -4px; width: 3px; height: 14px; background: #fff; box-shadow: 0 0 6px #fff; transition: left .4s; }
+.sanbar .tk { position: absolute; top: 0; width: 1px; height: 100%; background: #000; }
+.sanlbl { font-size: 14px; color: #8094ad; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dock .cap { flex-basis: 100%; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: #4fe3ff; margin-bottom: 2px; }
+.dock .grps.r .cap { color: #ff8a2a; text-align: right; }
+.ic { position: relative; }
+.ic .key { position: absolute; left: 1px; top: -2px; font-size: 12px; color: #8094ad; line-height: 1; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,138,42,0); } 50% { box-shadow: 0 0 0 3px rgba(255,138,42,.8); } }
+.grps.r.pulse .ic:not(.off) { animation: pulse 1.1s infinite; }
+@keyframes pulseB { 0%,100% { box-shadow: 0 0 0 0 rgba(79,227,255,0); } 50% { box-shadow: 0 0 0 3px rgba(79,227,255,.9); } }
+.hl { animation: pulseB 1.1s infinite; }
+.ftl { margin: 4px auto 2px; width: 300px; font-size: 14px; text-align: left; }
+.ftl .ln { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.ftl .ln .n { width: 104px; font-size: 13px; color: #8094ad; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ftl .trk { position: relative; flex: 1; height: 10px; background: #0b101a; border: 1px solid #22324a; display: flex; }
+.ftl .trk span { height: 100%; }
+.ftl .s { background: #ffd23a; } .ftl .a { background: #ff5a3a; } .ftl .r { background: #3d5f8f; } .ftl .mo { background: #4fe3ff; }
+.ftl .vd { color: #e9f3ff; font-size: 14px; line-height: 1.15; margin-top: 2px; }
+.ftl .lg { color: #6b7480; font-size: 12px; }
+.ftl .cur { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #fff; box-shadow: 0 0 4px #fff; }
+#stageTl { position: absolute; top: 168px; left: 50%; transform: translateX(-50%); width: 360px; background: rgba(5,7,11,.75); border: 1px solid #22324a; padding: 4px 8px; z-index: 3; pointer-events: none; }
+#stageTl[hidden] { display: none; }
+#stageTl .ftl { width: 100%; margin: 0; }
+.toast { position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%); max-width: 620px; background: rgba(8,10,16,.94); border: 1px solid #ffd23a; padding: 6px 14px; font-size: 19px; text-align: center; z-index: 4; pointer-events: none; transition: opacity .4s; }
+.toast b { color: #ffd23a; font-weight: 400; letter-spacing: 1px; }
+.toast[hidden] { display: none; }
+.tut { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); width: min(640px, 92%); background: rgba(8,14,26,.96); border: 2px solid #4fe3ff; padding: 10px 14px 10px; z-index: 6; font-size: 19px; line-height: 1.25; box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+.tut[hidden] { display: none; }
+.tut .k { font-size: 13px; letter-spacing: 3px; color: #4fe3ff; text-transform: uppercase; display: flex; justify-content: space-between; }
+.tut .k button { background: none; border: 0; color: #8094ad; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; padding: 0; }
+.tut .k button:hover { color: #fff; }
+.tut p { margin: 6px 0 4px; }
+.tut p b { color: #ffd23a; font-weight: 400; }
+.tut .msg { color: #ffb07a; min-height: 0; }
+.tut .row { display: flex; justify-content: flex-end; gap: 8px; }
+.tut .go { padding: 8px 14px; font-size: 11px; }
+.sheet .rules { margin-top: 10px; }
+.sheet summary { cursor: pointer; color: #8094ad; letter-spacing: 2px; text-transform: uppercase; font-size: 14px; }
+.sheet .big li { font-size: 19px; }
+.go.alt { background: #4fe3ff; box-shadow: 4px 4px 0 #1d5a6e; }
+.hgt { display: flex; gap: 4px; justify-content: center; margin: 2px 0; }
+.hgt button { background: #0a0d14; border: 2px solid #1d2635; color: #8094ad; padding: 2px 10px; font-size: 15px; }
+.hgt button.on { border-color: #4fe3ff; color: #4fe3ff; }
+.zoom { position: absolute; right: 10px; top: 180px; display: flex; align-items: center; gap: 4px; z-index: 4; }
+.zoom .hb { padding: 2px 9px; font-size: 16px; background: rgba(5,7,11,.7); }
+.zoom span { font-size: 15px; color: #8094ad; letter-spacing: 1px; min-width: 64px; text-align: center; background: rgba(5,7,11,.7); padding: 2px 4px; }
+.skipRp { position: absolute; right: 10px; bottom: 10px; z-index: 4; }
+.skipRp[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>T<span>E</span>LL</h1>
+    <div class="sub">Lulu vs the Yeti · Read the passive. Call the move.</div>
+    <div class="sp"></div>
+    <button class="hb" id="helpBtn" type="button">How to play</button>
+    <button class="hb" id="resetBtn" type="button">Restart</button>
+  </header>
+  <div class="stage" id="stage">
+    <canvas id="cv" width="1200" height="520"></canvas>
+    <div class="hud">
+      <div class="hp" id="hudA"></div>
+      <div class="hp r" id="hudM"></div>
+    </div>
+    <div class="turnbig" id="turnLbl"></div>
+    <div class="tip" id="tip">Click a fighter to read their passives</div>
+    <div class="insp" id="insp" hidden></div>
+    <div class="logbox" id="logBox"><h3 id="logHead"><span>Fight log</span><span id="logTog">&minus;</span></h3><div class="log" id="log"></div></div>
+    <div id="stageTl" hidden></div>
+    <div class="toast" id="toast" hidden></div>
+    <div class="tut" id="tut" hidden></div>
+    <button class="hb skipRp" id="skipRp" type="button" hidden>Skip replay (Esc)</button>
+    <div class="zoom"><button class="hb" id="zoomOut" type="button" title="Zoom out (-)">&minus;</button><span id="zoomLbl">AUTO 4x</span><button class="hb" id="zoomIn" type="button" title="Zoom in (+)">+</button><button class="hb" id="zoomAuto" type="button" title="Auto zoom (0)">Auto</button></div>
+  </div>
+  <div class="dock" id="bar">
+    <div id="mpeek"></div>
+    <div class="grps" id="groups"></div>
+    <div class="mid">
+      <div class="selname" id="selname"></div>
+      <div class="desc" id="desc"></div>
+      <div id="param"></div>
+      <div id="ftl"></div>
+      <button class="go" id="goBtn" type="button" disabled>Lock in</button>
+    </div>
+    <div class="grps r" id="eskills"></div>
+    <div id="epeek"></div>
+  </div>
+</div>
+
+<div class="overlay" id="intro">
+  <div class="sheet">
+    <h2>T<em>E</em>LL</h2>
+    <p>You are <b style="color:#4fe3ff">Lulu</b>. The <b style="color:#ff8a2a">Yeti</b> is played by the computer. Each turn you both pick one skill in secret, then both play out at the same time.</p>
+    <ul class="big">
+      <li><b>Faster moves hit first</b> and cancel slower ones.</li>
+      <li><b>Read the Yeti</b>: its mood (glow and the hint over its head) tells you what it's allowed to do and how it will fight.</li>
+      <li><b>Click the Yeti's skills</b> (bottom right) to see where they hit.</li>
+    </ul>
+    <div class="row"><button class="go alt" id="tutBtn" type="button">Tutorial (2 min)</button><button class="go" id="startBtn" type="button">Skip to fight</button></div>
+    <details class="rules"><summary>Full rules</summary>
+    <ul>
+      <li><b>Frames</b>: every skill has <b>Startup</b> (frames before it can hit), <b>Active</b> (frames it can hit) and <b>Recovery</b>. Both moves run side by side, frame by frame, so a fast move can land before a slow one ever comes out. Hit someone during their Startup and their move is cancelled.</li>
+      <li><b>Counter-hit</b>: get hit during your own attack's Startup or Active frames and you lose 10 Sanity. The one who landed it gains 5.</li>
+      <li><b>Combo</b>: at 15 hits in a row, and every 5 after, the attacker gains 5 Sanity and the defender loses 5.</li>
+      <li><b>Sanity</b> sets each fighter's <b>emotion</b>, and every emotion has a <b>passive</b> that limits moves. <b>Click a fighter</b> (or their name) to read it.</li>
+      <li><b>Light</b> pays for specials. You get 1 back each turn, up to 3.</li>
+      <li>Getting hit leaves you <b>Staggered</b>: +4 frames on your attacks next turn. Moving or guarding shakes it off (no penalty). Ice attacks leave you <b>Chilled</b>: +4 frames on everything.</li>
+      <li><b>Parry</b> (YOMI style): choose High or Low and the frame you expect the hit. Right frame + right height = <b>Perfect Parry</b>: no damage, +1 Light, and the attacker is Staggered. Anything else is a <b>block</b>: 1/3 chip damage, more if the height is wrong. Low attacks need Low; mid and high attacks need High. If you parried last turn and nothing came, you can only block.</li>
+      <li><b>Grab</b> (YOMI throws): pick <b>Forward</b> or <b>Back Throw</b>, optionally as a <b>Dash Grab</b> (+4 frames, lunges in). An active throw beats blocks, parries, armor and any strike landing on the same frame, but a strike that lands first stops it. You can't throw someone airborne, dashing, jumping or rolling, already hit this turn, or who blocked a hit. Both grabbing within 9 frames = <b>Throw Tech</b>.</li>
+      <li><b>Burst</b>: one stock each, refills over time and when you take damage. <b>Defensive</b> while being comboed (15 invulnerable frames, resets the combo) or <b>Offensive</b> right after you land a hit.</li>
+      <li><b>Stances</b>: For Justice! changes your stance, so the button becomes [2], then [3]. Lunge and Joust only work in Normal stance. Counter-hits do ×1.1 damage. <b>Roll</b> can't be hit while rolling.</li>
+      <li>The Yeti <b>remembers</b> the moves you use most and starts picking moves that beat them. Using the same attack 3 turns in a row makes it <b>Predictable</b>: +3 frames.</li>
+      <li>The faint shape shows where your move goes. The box shows where your attack hits. <b>Click any Yeti skill</b> to see its frames and its hit box on the stage.</li>
+      <li><b>Keys</b>: Q W E R move · A Lunge · S For Justice! · D Grab · Z Parry (↑/↓ height, ←/→ frame) · X Joust · C Burst · ←/→ distance · Enter lock in · Esc cancel.</li>
+    </ul>
+    </details>
+  </div>
+</div>
+
+<div class="overlay" id="endBox" hidden>
+  <div class="sheet">
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <table id="endStats"></table>
+    <div class="row"><button class="go" id="replayBtn" type="button">Watch replay</button><button class="go" id="againBtn" type="button">Fight again</button></div>
+  </div>
+</div>
+
+<script type="module">
+import * as core from "./pfx/core/index.js";
+import * as fx_thrust from "./pfx/fx/melee/thrust.js";
+import * as fx_heavyCleave from "./pfx/fx/melee/heavy-cleave.js";
+import * as fx_uppercut from "./pfx/fx/melee/uppercut.js";
+import * as fx_spearSweep from "./pfx/fx/melee/spear-sweep.js";
+import * as fx_iceLance from "./pfx/fx/ice/ice-lance.js";
+import * as fx_iceShatter from "./pfx/fx/ice/ice-shatter.js";
+import * as fx_frostNova from "./pfx/fx/ice/frost-nova.js";
+import * as fx_snowflakeBurst from "./pfx/fx/ice/snowflake-burst.js";
+import * as fx_blizzardVortex from "./pfx/fx/ice/blizzard-vortex.js";
+import * as fx_clawSwipe from "./pfx/fx/melee/claw-swipe.js";
+import * as fx_hammerSmash from "./pfx/fx/melee/hammer-smash.js";
+import * as fx_groundSlam from "./pfx/fx/impacts/ground-slam.js";
+import * as fx_boulder from "./pfx/fx/nature/boulder.js";
+import * as fx_bluntHit from "./pfx/fx/impacts/blunt-hit.js";
+import * as fx_heavyLanding from "./pfx/fx/impacts/heavy-landing.js";
+import * as fx_hitSpark from "./pfx/fx/impacts/hit-spark.js";
+import * as fx_critHit from "./pfx/fx/impacts/crit-hit.js";
+import * as fx_shieldBlock from "./pfx/fx/impacts/shield-block.js";
+import * as fx_parry from "./pfx/fx/impacts/parry.js";
+import * as fx_frozen from "./pfx/fx/status/frozen.js";
+import * as fx_quake from "./pfx/fx/nature/quake.js";
+const PFX = { createFrame: core.createFrame, clearFrame: core.clearFrame, createFx: core.createFx, composite: core.composite, PAL: core.PAL, mods: { thrust: fx_thrust, heavyCleave: fx_heavyCleave, uppercut: fx_uppercut, spearSweep: fx_spearSweep, iceLance: fx_iceLance, iceShatter: fx_iceShatter, frostNova: fx_frostNova, snowflakeBurst: fx_snowflakeBurst, blizzardVortex: fx_blizzardVortex, clawSwipe: fx_clawSwipe, hammerSmash: fx_hammerSmash, groundSlam: fx_groundSlam, boulder: fx_boulder, bluntHit: fx_bluntHit, heavyLanding: fx_heavyLanding, hitSpark: fx_hitSpark, critHit: fx_critHit, shieldBlock: fx_shieldBlock, parry: fx_parry, frozen: fx_frozen, quake: fx_quake } };
+const TUNE = {
+  W: 4800, FLOOR: 456, minX: 60, maxX: 4740, start: 2400,
+  grav: 1.1, jumpV: 18, djumpV: 15, diveV: -11, popV: 7, launchV: 11, airDrift: 26, gap: 54, airH: 140,
+  hp: 100, lightMax: 3, lightStart: 1, lightRegen: 1,
+  sanMin: -45, sanMax: 45, counterLoss: 10, counterGain: 5, comboStart: 15, comboStep: 5, comboSan: 5,
+  stagger: 4, chill: 4, burstStart: 1, burstMeter: 12, burstInvuln: 15, chipDiv: 3, counterMul: 1.1, techPush: 70, throwPush: 150, dashGrab: 80, extremeRecover: 10, push: 35, eventMs: 560, replayMs: 300, threat: 200
+};
+
+const BODY = { lulu: { hw: 36, h: 140 }, yeti: { hw: 50, h: 215 } };
+
+const SKILLS = {
+  // Don Quixote's kit, ported from the YOMI Hustle mod (Don Quixote.tscn). Move names kept as in the mod.
+  // Startup = the hitbox's start_tick, Active = active_ticks; damage 60 → 9, 120 → 15; enter_force_dir_x → "fwd" surge.
+  lulu: [
+    { id: "dash", name: "Dash", type: "move", light: 0, ground: true, range: [-150, 200], def: 160, pose: "walk", poseBack: "dashback", ds: "DashForward / DashBackward. Quick burst of speed." },
+    { id: "roll", name: "Roll", type: "move", light: 0, ground: true, invuln: true, range: [-220, 220], def: 200, pose: "roll", ds: "RollForward / RollBackward. Can't be hit while rolling, but slower to finish." },
+    { id: "jump", name: "Jump", type: "move", light: 0, ground: true, jump: true, range: [-150, 150], def: 60, ds: "Jump into the air. You come down at the end of next turn." },
+    { id: "djump", name: "Double Jump", type: "move", light: 0, airOnly: true, jump: true, range: [-200, 200], def: 100, ds: "A second jump while airborne. Air only." },
+    { id: "lunge", name: "Lunge", type: "atk", light: 0, hits: 2, dmg: 2, fwd: 40, h: "mid", stances: ["Normal"], setStance: "Normal", box: [36, 252, 60, 140], pose: "lunge", ds: "Step in and thrust the lance. Works in the air." },
+    { id: "fj1", name: "For Justice! [1]", type: "atk", light: 0, hits: 3, dmg: 3, fwd: 40, ground: true, h: "mid", fj: 1, stances: ["Normal"], setStance: "ForJustice2", box: [84, 260, 48, 104], pose: "fj1", ds: "Changes your stance to For Justice! [2]: this button becomes [2]. Lunge and Joust are locked until the chain ends." },
+    { id: "fj2", name: "For Justice! [2]", type: "atk", light: 0, hits: 3, dmg: 3, fwd: 80, ground: true, h: "mid", fj: 2, stances: ["ForJustice2"], setStance: "ForJustice3", box: [80, 256, 60, 116], pose: "fj2", ds: "Second strike, pushing forward. Changes your stance to For Justice! [3]." },
+    { id: "fj3", name: "For Justice! [3]", type: "atk", light: 0, hits: 4, dmg: 4, fwd: 120, ground: true, h: "mid", fj: 3, stances: ["ForJustice3"], setStance: "Normal", box: [76, 252, 60, 116], pose: "fj3", ds: "Final charge, covers lots of ground. Slow. Returns you to Normal stance." },
+    { id: "grab", name: "Grab", type: "atk", light: 0, hits: 1, dmg: 22, throwDmg: 22, grab: true, techable: 9, ground: true, box: [36, 236, 52, 108], pose: "grab", ds: "Throw: pick Forward or Back (and Dash Grab). Beats blocks and strikes that land on the same frame. Cannot grab airborne, dashing, rolling, blocking or already-hit targets. Grab each other in time = Throw Tech." },
+    { id: "parry", name: "Parry", type: "spc", light: 0, guard: true, parry: true, pose: "parry", poseLow: "parrylow", ds: "Pick height + the hit frame. Exact = Perfect Parry, else block (1/3 chip)." },
+    { id: "joust", name: "Joust", type: "spc", light: 1, hits: 5, dmg: 3, fwd: 80, h: "mid", stances: ["Normal"], setStance: "Normal", box: [36, 236, 52, 108], pose: "joust", ds: "Super. Charge in with the lance. Works in the air." },
+    { id: "burst", name: "Burst", type: "spc", light: 0, hits: 2, dmg: 2, clean: true, burst: true, h: "mid", pushMul: 3, box: [-90, 90, 0, 140], pose: "burst", ds: "Uses your Burst stock. Defensive while being comboed: invulnerable for 15 frames and resets their combo. Offensive right after you land a hit." }
+  ],
+  yeti: [
+    { id: "lumber", name: "Lumber", type: "move", light: 0, ground: true, range: [-120, 200], def: 120, ds: "Heavy steps forward, or back a little." },
+    { id: "charge", name: "Charge", type: "move", light: 0, ground: true, range: [0, 360], def: 260, ds: "Runs straight at you.", pose: "charge" },
+    { id: "bound", name: "Bound", type: "move", light: 0, ground: true, jump: true, range: [-100, 200], def: 100, ds: "Big jump into the air." },
+    { id: "swipe", name: "Swipe", type: "atk", light: 0, hits: 4, dmg: 2, box: [20, 100, 30, 120], h: "mid", pose: "swipe", ds: "Fast claw swipe in front." },
+    { id: "slam", name: "Slam", type: "atk", light: 0, hits: 3, dmg: 4, box: [20, 140, 0, 170], h: "high", pose: "slam", ds: "Both fists down hard. Slow but heavy." },
+    { id: "stomp", name: "Stomp", type: "atk", light: 0, hits: 5, dmg: 2, box: [-70, 110, 0, 40], ground: true, h: "low", pose: "stomp", ds: "Shakes the ground on both sides. Ground only." },
+    { id: "boulder", name: "Boulder Toss", type: "atk", light: 0, hits: 2, dmg: 5, box: [150, 470, 30, 130], proj: "boulder", h: "mid", pose: "toss", ds: "Throws a rock of ice far away. Misses up close." },
+    { id: "hug", name: "Bear Hug", type: "atk", light: 0, hits: 1, dmg: 12, throwDmg: 12, box: [16, 80, 20, 120], san: 5, grab: true, techable: 9, pose: "grab", ds: "A grab. Beats Parry; any attack beats it. A hit costs 5 Sanity. Grab it back in time to Throw Tech." },
+    { id: "flop", name: "Belly Flop", type: "atk", light: 0, hits: 6, dmg: 2, box: [-40, 120, -150, 60], air: true, h: "high", pose: "flop", ds: "Falls on you from the air. Air only." },
+    { id: "roar", name: "Roar", type: "spc", light: 2, hits: 6, dmg: 2, box: [-160, 170, 0, 240], san: 5, h: "mid", pose: "roar", ds: "Shockwave all around. A hit costs 5 Sanity." },
+    { id: "armor", name: "Ice Armor", type: "spc", light: 1, guard: true, pose: "armor", ds: "Covers itself in ice: blocks every hit for 1/3 chip damage, no counter-hits. Grabs go through it." },
+    { id: "yburst", name: "Burst", type: "spc", light: 0, hits: 2, dmg: 2, clean: true, burst: true, pushMul: 3, h: "mid", box: [-90, 90, 0, 140], pose: "roar", ds: "Uses its Burst stock. Defensive while you're comboing it (invulnerable, resets your combo), or Offensive right after it hits you." },
+    { id: "blizzard", name: "Blizzard", type: "spc", light: 3, hits: 8, dmg: 2, box: [0, 320, 0, 240], chill: true, h: "mid", pose: "blizzard", ds: "A storm in front of it. Slow. A hit leaves you Chilled." }
+  ]
+};
+Object.entries({ lulu: 1, yeti: 1.4 }).forEach(([k, m]) => SKILLS[k].forEach(s => { if (s.box) s.box = [s.box[0], s.box[1], Math.round(s.box[2] * m), Math.round(s.box[3] * m)]; }));
+const HOLD = { id: "hold", name: "Hold", type: "move", light: 0, range: [0, 0], def: 0, ds: "Stand still. Only shows up when nothing else is allowed." };
+
+const FRAMES = {
+  dash: [5, 0, 3], roll: [7, 0, 6], jump: [4, 0, 4], djump: [5, 0, 4],
+  lunge: [6, 2, 12], fj1: [6, 2, 12], fj2: [12, 3, 14], fj3: [21, 3, 14], grab: [5, 1, 15], parry: [1, 20, 2], joust: [15, 3, 14], burst: [3, 4, 10], yburst: [3, 4, 10],
+  lumber: [6, 0, 4], charge: [9, 0, 6], bound: [7, 0, 4],
+  swipe: [6, 3, 8], slam: [13, 4, 12], stomp: [9, 3, 10], boulder: [18, 6, 12], hug: [8, 2, 14], flop: [7, 4, 10], roar: [10, 4, 12], armor: [2, 14, 4], blizzard: [17, 6, 14],
+  hold: [3, 0, 0]
+};
+[...SKILLS.lulu, ...SKILLS.yeti, HOLD].forEach(sk => { const f = FRAMES[sk.id]; sk.st = f[0]; sk.ac = f[1]; sk.rc = f[2]; });
+
+const EMOS = {
+  lulu: [
+    { id: "scared", name: "Scared", min: -45, max: -45, extreme: true, only: ["move"], ps: "Only Movement for 1 turn." },
+    { id: "shivering", name: "Shivering", min: -44, max: -15, noApproach: true, ps: "Can't Dash, Roll or Double Jump toward the enemy." },
+    { id: "calm", name: "Calm", min: -14, max: 14, ps: "No limits." },
+    { id: "focused", name: "Focused", min: 15, max: 44, bonus: { lunge: 2, fj1: 2 }, ps: "Lunge and For Justice! [1] gain +2 hits." },
+    { id: "reckless", name: "Reckless", min: 45, max: 45, extreme: true, only: ["atk", "spc"], noGuard: true, speed: -2, ps: "Only attacks (no Parry), 2 frames faster to start, for 1 turn." }
+  ],
+  yeti: [
+    { id: "scared", name: "Scared", min: -45, max: -45, extreme: true, only: ["move"], ps: "Only Movement for 1 turn." },
+    { id: "sulking", name: "Sulking", min: -44, max: -20, ban: ["roar", "blizzard"], ps: "Won't use Roar or Blizzard." },
+    { id: "calm", name: "Calm", min: -19, max: 19, ps: "No limits." },
+    { id: "enraged", name: "Enraged", min: 20, max: 44, mustAttack: true, ps: "If you're close (200 or less), it must attack. No Ice Armor." },
+    { id: "frenzy", name: "Frenzy", min: 45, max: 45, extreme: true, only: ["atk", "spc"], noGuard: true, freeLight: ["roar"], ps: "Only attacks (no Ice Armor), Roar costs no Light, for 1 turn." }
+  ]
+};
+const NAMES = { lulu: { name: "Lulu", title: "the ice climber" }, yeti: { name: "Yeti", title: "the mountain's keeper" } };
+const KEYS = ["lulu", "yeti"];
+
+let G, sel, busy, peek = null, inspKey = null, anim = null, fx = [], hover = null, runId = 0, replay = null, lastEvent = null, everPeeked = false, toastT = 0;
+let live = [], lastNow = 0, frozenFx = {};
+function clearFx() { live = []; frozenFx = {}; }
+const $ = id => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const other = k => k === "lulu" ? "yeti" : "lulu";
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function fresh(key, x) { return { key, x, y: 0, dir: key === "lulu" ? 1 : -1, hp: TUNE.hp, san: 0, light: TUNE.lightStart, stag: false, chill: false, guard: false, pi: null, vx: 0, vy: 0, airJumps: 1, stance: "Normal", combo: 0, bursts: TUNE.burstStart, bmeter: 0, hitLast: false, whiffBlock: false, pose: "idle" }; }
+function newGame() {
+  G = { turn: 1, f: { lulu: fresh("lulu", TUNE.start - 160), yeti: fresh("yeti", TUNE.start + 160) }, log: [], over: false,
+        history: [], stats: { counters: { lulu: 0, yeti: 0 }, bestCombo: { lulu: 0, yeti: 0 }, scared: { lulu: 0, yeti: 0 }, dmg: { lulu: 0, yeti: 0 }, guarded: { lulu: 0, yeti: 0 } } };
+  G.habit = {}; G.noticed = null; G.recent = [];
+  runId++; replay = null; lastEvent = null;
+  sel = null; busy = false; anim = null; fx = []; peek = null;
+  clearFx();
+  if (typeof $ === "function" && $("skipRp")) { $("skipRp").hidden = true; $("stageTl").hidden = true; $("toast").hidden = true; }
+  addLog("t", "Turn 1");
+  addLog("", "The Yeti blocks the mountain path.");
+  ui();
+}
+function addLog(cls, text) { if (text) G.log.push({ cls, text }); }
+function addSan(f, d) { f.san = clamp(f.san + d, TUNE.sanMin, TUNE.sanMax); }
+function emo(k, san) {
+  const s = clamp(san === undefined ? G.f[k].san : san, TUNE.sanMin, TUNE.sanMax);
+  return EMOS[k].find(e => s >= e.min && s <= e.max);
+}
+function facing(f, o) { return o.x > f.x ? 1 : o.x < f.x ? -1 : f.dir; }
+function cost(k, s) { const e = emo(k); return e.freeLight && e.freeLight.includes(s.id) ? 0 : s.light; }
+// Same attack 3 turns running: the Yeti sees it coming (+3 frames).
+function predictable(k, s) { const r = G.recent || []; return k === "lulu" && s.type !== "move" && !s.guard && r.length >= 2 && r[r.length - 1] === s.id && r[r.length - 2] === s.id; }
+function startOf(k, s) { const e = emo(k), f = G.f[k]; return Math.max(2, s.st + (predictable(k, s) ? 3 : 0) + (f.stag && s.type !== "move" && !s.guard && !s.clean ? TUNE.stagger : 0) + (f.chill && !s.clean ? TUNE.chill : 0) + (e.speed || 0)); }
+function hitsOf(k, s) { const e = emo(k); return (s.hits || 0) + ((e.bonus && e.bonus[s.id]) || 0); }
+function dist(k) { return Math.abs(G.f[k].x - G.f[other(k)].x); }
+function paramRange(k, s) {
+  const e = emo(k);
+  let [lo, hi] = s.range || [0, 0];
+  if (e.noApproach && ["dash", "roll", "djump"].includes(s.id)) hi = Math.min(hi, 0);
+  return [lo, hi];
+}
+function blocked(k, s) {
+  const f = G.f[k], e = emo(k);
+  if (s === HOLD) return "";
+  if (e.only && !e.only.includes(s.type)) return e.name;
+  if (s.guard && (e.noGuard || e.mustAttack)) return e.name;
+  if (e.ban && e.ban.includes(s.id)) return e.name;
+  if (e.mustAttack && s.type === "move" && dist(k) <= TUNE.threat) return e.name;
+  if (s.ground && f.y > 0) return "In the air";
+  if ((s.air || s.airOnly) && f.y <= 0) return "On the ground";
+  if (s.airOnly && s.jump && (f.airJumps ?? 1) < 1) return "Double Jump used";   // YOMI air_movements_left: 1 per jump
+  if (s.stances && !s.stances.includes(f.stance || "Normal")) return "Stance: " + stanceName(f.stance);
+  if (s.burst) { if (f.bursts < 1) return "No Burst"; if (!burstMode(f)) return "Only in a combo"; }
+  if (cost(k, s) > f.light) return "No Light";
+  if (s.type === "move") { const [lo, hi] = paramRange(k, s); if (lo >= hi) return "No room"; }
+  return "";
+}
+// YOMI stance (change_stance_to / allowed_stances) and burst mode.
+function stanceName(st) { return st === "ForJustice2" ? "For Justice! [2]" : st === "ForJustice3" ? "For Justice! [3]" : "Normal"; }
+function burstMode(f) { return f.combo > 0 ? "Defensive" : f.hitLast ? "Offensive" : ""; }
+// The For Justice! button shows whichever part your stance allows.
+function fjNow() { const st = G.f.lulu.stance || "Normal"; return SKILLS.lulu.find(x => x.fj && x.stances.includes(st)) || SKILLS.lulu.find(x => x.fj === 1); }
+const heightOk = (atkH, parryH) => (atkH || "mid") === "low" ? parryH === "low" : parryH === "high";
+function boxOf(f, o, s) {
+  const d = facing(f, o), [a, b, y0, y1] = s.box;
+  const x1 = f.x + a * d, x2 = f.x + b * d;
+  return { x0: Math.min(x1, x2), x1: Math.max(x1, x2), y0: Math.max(0, f.y + y0), y1: f.y + y1 };
+}
+function hurt(f) { const B = BODY[f.key]; return { x0: f.x - B.hw, x1: f.x + B.hw, y0: f.y, y1: f.y + B.h }; }
+function overlap(a, b) { return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0; }
+function targetOf(k, s, p) {
+  const f = G.f[k], o = G.f[other(k)], d = facing(f, o);
+  const tx = clamp(f.x + p * d, TUNE.minX, TUNE.maxX);
+  const ty = s.jump ? TUNE.airH : s.id === "hook" ? 0 : f.y;
+  return { tx, ty };
+}
+
+// Predict Lulu from her habits: decayed counts of the skills she picked.
+function habitDist() {
+  const h = G.habit || {}, tot = Object.values(h).reduce((a, x) => a + x, 0);
+  if (G.turn < 3 || tot <= 0) return { tot: 0, list: [], top: null, share: 0 };
+  const list = Object.entries(h).map(([id, w]) => ({ s: SKILLS.lulu.find(x => x.id === id), share: w / tot })).filter(x => x.s && !blocked("lulu", x.s)).sort((a, b) => b.share - a.share);
+  return { tot, list, top: list[0] ? list[0].s : null, share: list[0] ? list[0].share : 0 };
+}
+// Run one turn in a sandbox and return the Yeti's net result (damage dealt minus damage taken).
+function simTurn(yS, yP, lS, lP, lH) {
+  const save = G;
+  G = { f: JSON.parse(JSON.stringify(save.f)), stats: JSON.parse(JSON.stringify(save.stats)), turn: save.turn, recent: save.recent };
+  let v = 0;
+  try {
+    const h0 = { l: G.f.lulu.hp, y: G.f.yeti.hp, ls: G.f.lulu.san, ys: G.f.yeti.san };
+    resolve({ lulu: { s: lS, p: lP, h: lH || "high" }, yeti: { s: yS, p: yP } });
+    v = (h0.l - G.f.lulu.hp) - (h0.y - G.f.yeti.hp) + ((h0.ls - G.f.lulu.san) - (h0.ys - G.f.yeti.san)) * 0.3;
+  } catch (err) { v = 0; }
+  G = save;
+  return v;
+}
+function aiPick() {
+  if (G.tut != null && TUT[G.tut] && TUT[G.tut].yeti) {
+    const t = TUT[G.tut].yeti, s = SKILLS.yeti.find(x => x.id === t.id);
+    return { s, p: t.p || 0 };
+  }
+  const k = "yeti", f = G.f[k], o = G.f.lulu, e = emo(k), opts = [];
+  const threatened = SKILLS.lulu.some(s => s.box && !blocked("lulu", s) && overlap(boxOf(o, f, s), hurt(f)));
+  const mood = e.id;
+  SKILLS[k].forEach(s => {
+    if (blocked(k, s)) return;
+    if (s.type === "move") {
+      const [lo, hi] = paramRange(k, s);
+      [lo, -60, 60, 120, 200, 280, hi].filter(p => p >= lo && p <= hi).forEach(p => {
+        const { tx, ty } = targetOf(k, s, p);
+        const nd = Math.abs(tx - o.x);
+        let sc;
+        if (mood === "scared" || f.hp < 25) sc = nd / 120;
+        else if (mood === "enraged") sc = 3.4 - nd / 70;             // rushes in
+        else if (mood === "sulking") sc = 3 - Math.abs(nd - 320) / 70; // keeps away
+        else sc = 3 - Math.abs(nd - 85) / 70;
+        if (o.y > 0 && ty > 0) sc += 1;
+        opts.push({ s, p, sc });
+      });
+    } else if (s.guard) {
+      let sc = threatened ? 2.6 + (f.hp < 40 ? 1 : 0) : -1;
+      if (mood === "sulking") sc += 1;
+      opts.push({ s, p: 0, sc });
+    } else {
+      const bx = boxOf(f, o, s);
+      const now = overlap(bx, hurt(o));
+      const near = [-70, 70].some(dx => overlap(bx, hurt({ ...o, x: o.x + dx })));
+      let sc = now ? 4 + (s.throwDmg || hitsOf(k, s) * s.dmg) / 6 : near ? 1.6 : 0.2;
+      if (s.grab && !now && dist(k) > 160 && dist(k) < 260) sc = 2.2;   // dash grab range
+      if (now && (o.stag || o.chill)) sc += 2;
+      if (now && startOf(k, s) >= 12 && dist(k) < 110) sc -= 1.5;
+      if (s.type === "spc" && now) sc += 1.2;
+      if (s.burst) sc = burstMode(f) === "Defensive" ? 1.5 + f.combo / 5 + (f.hp < 40 ? 1.5 : 0) + (threatened ? 1 : 0) : sc - 1;
+      if (s.grab && (G.recent || []).slice(-1)[0] === "parry") sc += 1.5;   // she likes to parry: grab her
+      if (mood === "enraged" || mood === "frenzy") sc += 0.8;
+      if (mood === "sulking") sc += s.proj ? 1 : -0.5;
+      opts.push({ s, p: 0, sc });
+    }
+  });
+  if (!opts.length) return { s: HOLD, p: 0 };
+  // Punish habits: the more predictable Lulu is, the more the Yeti plays to beat her favourite moves.
+  const hd = habitDist();
+  if (hd.share >= 0.3) {
+    const preds = hd.list.slice(0, 2).map(x => {
+      const [lo, hi] = paramRange("lulu", x.s);
+      return { s: x.s, p: x.s.type === "move" ? clamp(x.s.def || 0, lo, hi) : x.s.parry ? 10 : 0, h: "high", w: x.share };
+    });
+    const strength = Math.min(1, (hd.share - 0.2) * 2.2);
+    opts.forEach(x => {
+      const v = preds.reduce((a, pr) => a + pr.w * simTurn(x.s, x.p, pr.s, pr.p, pr.h), 0) / preds.reduce((a, pr) => a + pr.w, 0);
+      x.sc += strength * v * 0.4;
+    });
+  }
+  opts.forEach(x => { if (x.s.grab) { const d = facing(f, o); x.tdir = (f.x + d * TUNE.throwPush > TUNE.maxX - 40 || f.x + d * TUNE.throwPush < TUNE.minX + 40) ? "back" : "fwd"; x.dash = dist(k) > 160 && dist(k) < 260; } });
+  opts.forEach(x => x.w = Math.exp(x.sc * 0.5));
+  let r = Math.random() * opts.reduce((a, x) => a + x.w, 0);
+  for (const x of opts) { r -= x.w; if (r <= 0) return x; }
+  return opts[0];
+}
+// What the Yeti's body language says this turn (shown over its head and in its panel).
+function yetiTell() {
+  const e = emo("yeti"), hd = habitDist();
+  const T = { calm: "WATCHING YOU", enraged: "SNARLING - WILL RUSH IN", sulking: "SULKING - KEEPS AWAY", frenzy: "FRENZY - ATTACKS ONLY", scared: "TERRIFIED - WILL FLEE" };
+  return { mood: T[e.id] || "", habit: hd.share >= 0.4 && hd.top ? `EYEING YOUR ${hd.top.name}` : "" };
+}
+
+function snap() { return JSON.parse(JSON.stringify(G.f)); }
+
+function resolve(P) {
+  const ev = [];
+  const startEmo = { lulu: emo("lulu"), yeti: emo("yeti") };
+  const A = {}, hit = { lulu: false, yeti: false }, stagHit = { lulu: false, yeti: false }, airAct = { lulu: false, yeti: false }, chillNext = { lulu: false, yeti: false };
+  const push = (text, cls, extra) => ev.push(Object.assign({ text, cls: cls || "", f: snap(), pops: [], frame: cur }, extra || {}));
+  let cur = 0;
+  KEYS.forEach(k => {
+    const s = P[k].s, f = G.f[k];
+    f.light -= cost(k, s);
+    const st0 = startOf(k, s), dg = P[k].dash && s.grab ? 4 : 0;   // Grab.gd DASH_LAG = 4
+    A[k] = { s, p: P[k].p, h: P[k].h || "high", tdir: P[k].tdir || "fwd", dash: !!dg, st: st0 + dg, ac: s.ac || 0, rc: s.rc || 0, end: st0 + dg + (s.ac || 0) + (s.rc || 0), hits: hitsOf(k, s), dir: facing(f, G.f[other(k)]), cancelled: false, landed: false, started: false, over: false };
+    f.guard = false; f.pi = null;   // no pose reset: fighters stay frozen in their last pose (like YOMI) until the new action starts
+  });
+  const setPose = (k, pose, hold, seg) => { const f = G.f[k]; f.pose = pose; f.pk = (f.pk || 0) + 1; f.pf = hold ? 0 : null; f.pseg = seg || null; };
+  const hasHit = (k, pose) => { const a = SHEETS[k] && SHEETS[k].anims && SHEETS[k].anims[pose]; return !!(a && a.hit != null); };
+  const blockedT = { lulu: false, yeti: false }, parryHit = { lulu: false, yeti: false }, dmgTaken = { lulu: 0, yeti: 0 }, burstUsed = {};
+  KEYS.forEach(k => {   // Burst: spend the stock; a Defensive Burst resets the combo you're in
+    if (!A[k].s.burst) return;
+    const f = G.f[k]; burstUsed[k] = burstMode(f) || "Offensive";
+    f.bursts = 0; f.bmeter = 0;
+    if (burstUsed[k] === "Defensive") f.combo = 0;
+  });
+  const total = Math.max(A.lulu.end, A.yeti.end);
+  const tl = {};
+  KEYS.forEach(kk => { tl[kk] = { name: A[kk].s.name, st: A[kk].st, ac: A[kk].ac, rc: A[kk].rc, type: A[kk].s.type }; });
+  tl.total = total;
+  push(`You: ${A.lulu.s.name} (${A.lulu.st}f to hit).  Yeti: ${A.yeti.s.name} (${A.yeti.st}f to hit).`, "t", { tl });
+  const live = k => !A[k].cancelled && !A[k].over;
+  for (cur = 1; cur <= total; cur++) {
+    KEYS.forEach(k => {
+      const a = A[k], f = G.f[k];
+      if (a.cancelled || a.over) return;
+      if (a.s.guard) {
+        if (cur === a.st) {
+          f.guard = true; a.started = true;
+          f.pi = a.s.parry ? { timing: a.p, height: a.h, canPerfect: !f.whiffBlock } : null;
+          setPose(k, a.s.parry && a.h === "low" ? a.s.poseLow : a.s.pose, false);
+          push(a.s.parry ? `${NAMES[k].name} parries ${a.h.toUpperCase()}, timed for frame ${a.p}${a.p >= 20 ? "+" : ""}${f.whiffBlock ? " (re-block: can't perfect parry)" : ""}.` : `${NAMES[k].name} raises ${a.s.name}.`);
+        }
+        if (cur === a.st + a.ac) { f.guard = false; f.pi = null; }
+      }
+      if (cur === a.end) a.over = true;   // keep the last frame of the animation
+    });
+    if (cur === 1 && Object.keys(burstUsed).length) push(Object.keys(burstUsed).map(k => `${NAMES[k].name} uses ${burstUsed[k]} Burst!`).join(" "), "emo", { pops: Object.keys(burstUsed).map(k => ({ x: G.f[k].x, y: G.f[k].y + BODY[k].h + 30, t: "BURST", c: "#ffd23a", big: true })) });
+    if (cur === 1) KEYS.forEach(k => {   // state entry: windup frame of the new action
+      const a = A[k];
+      if (a.s === HOLD) return;
+      if (a.s.type === "move") setPose(k, (a.p < 0 && a.s.poseBack) || a.s.pose || (a.s.jump ? "air" : "walk"), true);
+      else if (a.s.guard) setPose(k, a.s.parry && a.h === "low" ? a.s.poseLow : a.s.pose, false);
+      else if (hasHit(k, a.s.pose)) setPose(k, a.s.pose, false, "pre");
+      else setPose(k, a.s.pose, true);
+    });
+    if (cur === 1) {   // enter_force: some attacks surge forward as they start
+      const surg = KEYS.filter(k => A[k].s.fwd || A[k].dash);
+      surg.forEach(k => {
+        const f = G.f[k], o = G.f[other(k)], a = A[k];
+        let tx = clamp(f.x + (a.s.fwd || TUNE.dashGrab) * a.dir, TUNE.minX, TUNE.maxX);
+        if (Math.abs(f.y - o.y) < 60) {
+          const side = Math.sign(f.x - o.x) || -a.dir;
+          if (Math.sign(tx - o.x) !== side || Math.abs(tx - o.x) < TUNE.gap) tx = clamp(o.x + side * TUNE.gap, TUNE.minX, TUNE.maxX);
+        }
+        f.x = tx;
+      });
+      if (surg.length) push(surg.map(k => A[k].dash ? `${NAMES[k].name} dashes in to grab.` : `${NAMES[k].name} surges forward.`).join(" "), "", { trail: surg });
+    }
+    const movers = KEYS.filter(k => live(k) && A[k].s.type === "move" && cur === A[k].st);
+    const tgt = {};
+    movers.forEach(k => {
+      const f = G.f[k], a = A[k];
+      tgt[k] = { tx: a.s.jump ? f.x : clamp(f.x + a.p * a.dir, TUNE.minX, TUNE.maxX), ty: f.y };
+    });
+    movers.forEach(k => {
+      const f = G.f[k], o = G.f[other(k)], a = A[k];
+      const ox = movers.includes(other(k)) ? tgt[other(k)].tx : o.x;
+      const oy = movers.includes(other(k)) ? tgt[other(k)].ty : o.y;
+      let { tx, ty } = tgt[k];
+      if (Math.abs(ty - oy) < 60) {
+        const side = Math.sign(f.x - o.x) || -a.dir;
+        if (Math.sign(tx - ox) !== side || Math.abs(tx - ox) < TUNE.gap) tx = clamp(ox + side * TUNE.gap, TUNE.minX, TUNE.maxX);
+      }
+      tgt[k] = { tx, ty };
+    });
+    movers.forEach(k => {
+      const f = G.f[k], a = A[k];
+      f.x = tgt[k].tx; f.y = tgt[k].ty;
+      if (a.s.jump) {   // gravity: launch upward and drift sideways; the arc plays out frame by frame
+        airAct[k] = true;
+        f.vy = a.s.airOnly ? TUNE.djumpV : TUNE.jumpV;
+        if (a.s.airOnly) f.airJumps = Math.max(0, (f.airJumps ?? 1) - 1);   // spend the air jump
+        f.vx = (a.p * a.dir) / TUNE.airDrift; f.y = Math.max(f.y, 1);
+      }
+      setPose(k, (a.p < 0 && a.s.poseBack) || a.s.pose || (f.y > 0 ? "air" : a.s === HOLD ? "idle" : "walk"), false);
+    });
+    if (movers.length) push(movers.map(k => `${NAMES[k].name} finishes ${A[k].s.name}.`).join(" "), "", { trail: movers.filter(k => ["dash", "roll", "djump", "charge"].includes(A[k].s.id)) });
+    const wasLive = {};
+    KEYS.forEach(k => { wasLive[k] = live(k) && A[k].s.type !== "move" && !A[k].s.guard && cur < A[k].st + A[k].ac; });
+    const swinging = KEYS.filter(k => live(k) && A[k].s.type !== "move" && !A[k].s.guard && cur >= A[k].st && cur < A[k].st + A[k].ac);
+    const startedNow = swinging.filter(k => !A[k].started);
+    startedNow.forEach(k => { A[k].started = true; setPose(k, A[k].s.pose, false, hasHit(k, A[k].s.pose) ? "post" : null); if (A[k].s.air) { airAct[k] = true; G.f[k].vy = Math.min(G.f[k].vy, TUNE.diveV); } });
+    const landedNow = [];
+    // can_be_thrown(): not airborne (hits_vs_aerial = false), not in hitstun, not blocking, not while dashing / jumping / rolling
+    // Dash.gd: only a BACK dash is throw-invulnerable (frames 0-7); Jump.gd: takeoff is; RollStartup.gd: frames 0-10
+    const throwInvuln = k => { const f = G.f[k], a = A[k], mv = a.s.type === "move" && a.s !== HOLD && !a.cancelled;
+      return f.y > 0 || hit[k] || blockedT[k] || (mv && a.s.jump) || (mv && a.s.invuln && cur <= 10) || (mv && a.p < 0 && cur <= 7); };
+    swinging.forEach(k => {
+      const a = A[k];
+      if (a.landed) return;
+      const f = G.f[k], o = G.f[other(k)];
+      a.bx = boxOf(f, o, a.s);
+      const oa = A[other(k)];
+      if (oa.s.invuln && !oa.cancelled && cur <= oa.st + 2) return;   // rolling: can't be hit
+      if (oa.s.burst && cur <= TUNE.burstInvuln) return;               // Burst: invulnerable on frames 1-15
+      if (a.s.grab && throwInvuln(other(k))) return;
+      if (overlap(a.bx, hurt(o))) landedNow.push(k);
+    });
+    const fxBase = k => ({ k, bx: A[k].bx || boxOf(G.f[k], G.f[other(k)], A[k].s), proj: A[k].s.proj || null, from: { x: G.f[k].x, y: G.f[k].y + BODY[k].h * 0.6 }, dir: A[k].dir, sid: A[k].s.id });
+    if (!landedNow.length && startedNow.length) push("", "", {});
+    // game.gd: an active throwbox beats a strike landing on the same frame (the strike is ignored unless it beats_grab)
+    if (landedNow.length === 2 && !!A[landedNow[0]].s.grab !== !!A[landedNow[1]].s.grab) {
+      const striker = landedNow.find(k => !A[k].s.grab);
+      landedNow.splice(landedNow.indexOf(striker), 1);
+    }
+    landedNow.forEach(k => {
+      const a = A[k], s = a.s, ok = other(k), of = G.f[ok], af = G.f[k], oa = A[ok];
+      if (a.landed) return;
+      a.landed = true;
+      const fxb = Object.assign(fxBase(k), { hit: true });
+      // Throw Tech: grabbed while your own grab is in its first 9 frames (Grab.gd throw_techable)
+      if (s.grab && oa.s.grab && !oa.cancelled && cur <= (oa.s.techable || 9)) {
+        oa.landed = true; oa.cancelled = true;
+        KEYS.forEach(kk => { const ff = G.f[kk]; ff.x = clamp(ff.x - facing(ff, G.f[other(kk)]) * TUNE.techPush, TUNE.minX, TUNE.maxX); ff.pose = "tech"; });
+        push(`Frame ${cur}: both grab. Throw Tech! Both are pushed apart.`, "emo", { pops: [{ x: (af.x + of.x) / 2, y: of.y + BODY[ok].h + 30, t: "TECH", c: "#ffffff", big: true }] });
+        return;
+      }
+      if (s.grab) {   // ThrowState: opponent goes to Grabbed, is held, then released by Forward / Back Throw
+        oa.cancelled = true;
+        const d = a.dir, back = a.tdir === "back";
+        setPose(k, "grab", false); setPose(ok, "hurt", false);
+        of.x = clamp(af.x + d * TUNE.gap, TUNE.minX, TUNE.maxX);
+        push(`Frame ${cur}: ${NAMES[k].name} grabs ${NAMES[ok].name}!`, ok === "lulu" ? "bad" : "", { box: fxb, pops: [{ x: of.x, y: of.y + BODY[ok].h + 30, t: "GRAB", c: "#ffffff", big: true }] });
+        const dmg = s.throwDmg || a.hits * s.dmg;
+        of.hp = Math.max(0, of.hp - dmg); dmgTaken[ok] += dmg; G.stats.dmg[k] += dmg;
+        hit[ok] = true; stagHit[ok] = true;
+        of.x = clamp(af.x + (back ? -d : d) * TUNE.throwPush, TUNE.minX, TUNE.maxX);
+        if (back) af.dir = -af.dir;
+        of.y = Math.max(of.y, 1); of.vy = TUNE.launchV; of.vx = (back ? -d : d) * 1.5;   // ForwardThrow: dir_y -0.3, launched
+        of.combo += 1; G.stats.bestCombo[k] = Math.max(G.stats.bestCombo[k], of.combo);
+        if (s.san) addSan(of, -s.san);
+        push(`${NAMES[k].name}'s ${back ? "Back" : "Forward"} Throw: ${dmg} damage${back ? ", sides swapped" : ""}${s.san ? `, -${s.san} Sanity` : ""}.`, ok === "lulu" ? "bad" : "", { spark: { x: of.x, y: of.y + BODY[ok].h * 0.6 }, pops: [{ x: of.x, y: of.y + BODY[ok].h + 10, t: `-${dmg}`, c: "#ffd23a" }] });
+        return;
+      }
+      const guarded = of.guard && !s.grab;
+      const pi = guarded ? of.pi : null;
+      const hm = pi ? heightOk(s.h, pi.height) : true;
+      const perfect = !!(pi && pi.canPerfect && hm && (pi.timing === cur || (pi.timing >= 20 && cur >= 20)));
+      const n = a.hits;
+      const counter = !guarded && wasLive[ok];
+      const raw = Math.round(n * s.dmg * (counter ? TUNE.counterMul : 1));
+      let dmg = raw;
+      if (perfect) dmg = 0;
+      else if (guarded) dmg = Math.floor(raw / TUNE.chipDiv) + (hm ? 0 : Math.floor(raw / (TUNE.chipDiv * 2)));   // PARRY_CHIP_DIVISOR; wrong height adds half again
+      of.hp = Math.max(0, of.hp - dmg); dmgTaken[ok] += dmg;
+      if (!guarded) hit[ok] = true; else { blockedT[ok] = true; parryHit[ok] = true; }
+      if (!guarded) { stagHit[ok] = true; setPose(ok, of.y > 0 ? "hurtair" : "hurt", false); if (of.y > 0) { of.vy = Math.max(of.vy, TUNE.popV); of.vx = facing(af, of) * 2; } }
+      const away = s.grab ? TUNE.throwPush : TUNE.push * (guarded ? 0.5 : 1) * (s.pushMul || 1);
+      of.x = clamp(of.x + facing(af, of) * away, TUNE.minX, TUNE.maxX);
+      G.stats.dmg[k] += dmg;
+      const pops = perfect ? [] : [{ x: of.x, y: of.y + BODY[ok].h + 10, t: `-${dmg}`, c: "#ffd23a" }];
+      if (guarded) { G.stats.guarded[ok]++; pops.push({ x: of.x, y: of.y + BODY[ok].h + 34, t: perfect ? "PERFECT PARRY" : "BLOCK", c: "#8fe3ff", big: true }); }
+      if (perfect) { stagHit[k] = true; of.light = Math.min(TUNE.lightMax, of.light + 1); }
+      const why = pi && !perfect ? (!pi.canPerfect ? " (re-block)" : !hm ? ` (wrong height: ${(s.h || "mid").toUpperCase()} needs ${s.h === "low" ? "LOW" : "HIGH"})` : ` (timed ${pi.timing}, hit came on ${cur})`) : "";
+      push(perfect ? `Frame ${cur}: Perfect Parry! ${NAMES[ok].name} takes no damage, gains 1 Light, and ${NAMES[k].name} is Staggered.`
+        : guarded ? `Frame ${cur}: ${NAMES[ok].name} blocks ${NAMES[k].name}'s ${s.name}: ${dmg} chip damage${why}.`
+        : `Frame ${cur}: ${NAMES[k].name}'s ${s.name} lands ${n} hits for ${dmg} damage${counter ? " (counter-hit ×1.1)" : ""}${s.grab ? ". Forward Throw!" : ""}.`, ok === "lulu" && !perfect ? "bad" : "", perfect ? { box: fxb, clash: { x: (of.x + af.x) / 2 + facing(of, af) * 10, y: of.y + 70 }, pops } : { box: fxb, spark: { x: of.x, y: of.y + BODY[ok].h * 0.6 }, pops });
+      if (!guarded && wasLive[ok]) {
+        addSan(of, -TUNE.counterLoss); addSan(af, TUNE.counterGain);
+        G.stats.counters[k]++;
+        push(`Counter-hit! ${NAMES[ok].name} was mid-attack and loses ${TUNE.counterLoss} Sanity. ${NAMES[k].name} gains ${TUNE.counterGain}.`, "bad", { pops: [{ x: of.x, y: of.y + BODY[ok].h + 40, t: "COUNTER", c: "#ff8a2a", big: true }] });
+      }
+      if (!guarded && !oa.over && !oa.cancelled && cur < oa.st && !landedNow.includes(ok)) {
+        oa.cancelled = true; setPose(ok, of.y > 0 ? "hurtair" : "hurt", false);
+        push(`${NAMES[ok].name}'s ${oa.s.name} is interrupted before it comes out.`);
+      }
+      if (s.san && !guarded) { addSan(of, -s.san); push(`${NAMES[ok].name} loses ${s.san} Sanity.`, "bad"); }
+      if (s.chill && !guarded) { chillNext[ok] = true; push(`${NAMES[ok].name} is Chilled: +${TUNE.chill} frames to start moves next turn.`, "emo"); }
+      if (!guarded) {
+        const before = of.combo;
+        of.combo += n;
+        G.stats.bestCombo[k] = Math.max(G.stats.bestCombo[k], of.combo);
+        for (let t = TUNE.comboStart; t <= of.combo; t += TUNE.comboStep) {
+          if (before < t) {
+            addSan(af, TUNE.comboSan); addSan(of, -TUNE.comboSan);
+            push(`${t}-hit combo! ${NAMES[k].name} +${TUNE.comboSan} Sanity, ${NAMES[ok].name} -${TUNE.comboSan}.`, "emo", { pops: [{ x: of.x, y: of.y + BODY[ok].h + 64, t: `${t} HITS`, c: "#ffffff", big: true }] });
+          }
+        }
+      }
+    });
+    KEYS.forEach(k => {
+      const a = A[k];
+      if (live(k) && a.s.type !== "move" && !a.s.guard && !a.landed && cur === a.st + a.ac - 1) {
+        push(`${NAMES[k].name}'s ${a.s.name} misses.`, "", { box: Object.assign(fxBase(k), { hit: false }) });
+      }
+    });
+    // gravity step
+    let airborne = false;
+    KEYS.forEach(k => {
+      const f = G.f[k];
+      if (f.y <= 0 && f.vy <= 0) { f.y = 0; f.vy = 0; f.vx = 0; return; }
+      airborne = true;
+      f.vy -= TUNE.grav; f.y += f.vy; f.x = clamp(f.x + f.vx, TUNE.minX, TUNE.maxX);
+      if (f.y <= 0) {
+        f.y = 0; f.vy = 0; f.vx = 0; f.airJumps = 1;   // landing refills the air jump
+        const o = G.f[other(k)];
+        if (o.y <= 0 && Math.abs(f.x - o.x) < TUNE.gap) f.x = clamp(o.x + (Math.sign(f.x - o.x) || -facing(f, o)) * TUNE.gap, TUNE.minX, TUNE.maxX);   // don't land inside the other fighter
+        if (["air", "hurtair", "flop", "jump"].includes(f.pose)) setPose(k, "idle", false);
+        if (A[k].s.air && !A[k].over) A[k].over = true;   // an air attack ends on landing
+      }
+    });
+    if (airborne && cur % 2 === 0) push("", "", {});      // extra snapshots so the arc animates smoothly
+    if (G.f.lulu.hp <= 0 || G.f.yeti.hp <= 0) break;
+  }
+  KEYS.forEach(k => {
+    const f = G.f[k];
+    if (!hit[k]) f.combo = 0;
+    f.stag = stagHit[k];
+    f.chill = chillNext[k];
+    f.guard = false;
+    if (startEmo[k].extreme && (f.san <= TUNE.sanMin || f.san >= TUNE.sanMax)) f.san += f.san < 0 ? TUNE.extremeRecover : -TUNE.extremeRecover;
+    // airborne fighters keep their height and velocity into the next turn
+    if (P[k].s.setStance) f.stance = P[k].s.setStance;   // change_stance_to on entering the move; otherwise the stance stays
+    f.hitLast = hit[other(k)];
+    f.whiffBlock = !!P[k].s.parry && !parryHit[k];    // NewParry: whiffed block → can only block next turn
+    f.pi = null;
+    if (f.bursts < 1) { f.bmeter += 1 + Math.floor(dmgTaken[k] / 10); if (f.bmeter >= TUNE.burstMeter) { f.bursts = 1; f.bmeter = 0; } }
+    f.light = Math.min(TUNE.lightMax, f.light + TUNE.lightRegen);
+    f.dir = facing(f, G.f[other(k)]);
+    if (f.y <= 0 && (f.pose === "air" || f.pose === "hurtair")) { f.pose = "idle"; f.pf = null; }   // landed
+  });
+  const em = [];
+  KEYS.forEach(k => {
+    const a = startEmo[k], b = emo(k);
+    if (a.id !== b.id) { if (b.id === "scared") G.stats.scared[k]++; em.push({ k, b }); }
+  });
+  cur = total;
+  push(em.map(({ k, b }) => `${NAMES[k].name} is now ${b.name}.`).join(" "), em.length ? "emo" : "", { pops: em.map(({ k, b }) => ({ x: G.f[k].x, y: G.f[k].y + BODY[k].h + 50, t: b.name.toUpperCase(), c: k === "lulu" ? "#8fe3ff" : "#ff8a2a", big: true })) });
+  return ev;
+}
+
+function commit() {
+  if (!sel || busy || G.over) return;
+  busy = true;
+  closeInsp();
+  peek = null; renderEnemy();
+  const ai = aiPick();
+  if (G.tut == null) {
+    Object.keys(G.habit).forEach(id => G.habit[id] *= 0.8);
+    G.habit[sel.s.id] = (G.habit[sel.s.id] || 0) + 1;
+  }
+  const start = snap();
+  const sel0 = sel;
+  if (predictable("lulu", sel.s)) addLog("bad", `Predictable! ${sel.s.name} 3 turns in a row: +3 frames.`);
+  const ev = resolve({ lulu: { s: sel.s, p: sel.p, h: sel.h, tdir: sel.tdir, dash: sel.dash }, yeti: { s: ai.s, p: ai.p, tdir: ai.tdir, dash: ai.dash } });
+  G.recent = (G.recent || []).concat(sel.s.id).slice(-3);
+  const final = snap();
+  G.f = start;
+  sel = null;
+  G.history.push({ start: JSON.parse(JSON.stringify(start)), ev, final: JSON.parse(JSON.stringify(final)), turn: G.turn });
+  anim = { ev, i: -1, t0: 0, from: start, final, start, P: { lulu: sel0, yeti: ai } };
+  ui();
+  showTl(ev[0] && ev[0].tl);
+  nextEvent(runId);
+}
+function startReplay() {
+  if (!G.history.length || replay) return;
+  $("endBox").hidden = true;
+  closeInsp();
+  replay = { i: 0, saveF: JSON.parse(JSON.stringify(G.f)) };
+  busy = true;
+  fx = []; clearFx(); lastEvent = null;
+  runId++;
+  $("skipRp").hidden = false;
+  playReplayTurn();
+}
+function playReplayTurn() {
+  const h = G.history[replay.i];
+  G.f = JSON.parse(JSON.stringify(h.start));
+  anim = { ev: h.ev, i: -1, t0: 0, from: G.f, final: h.final };
+  clearFx(); fx = [];
+  $("turnLbl").textContent = `REPLAY · TURN ${h.turn} / ${G.history.length}`;
+  showTl(h.ev[0] && h.ev[0].tl);
+  nextEvent(runId);
+}
+function endReplay() {
+  if (!replay) return;
+  runId++;
+  G.f = replay.saveF; replay = null; anim = null; busy = false; lastEvent = null;
+  clearFx(); fx = [];
+  $("skipRp").hidden = true; $("stageTl").hidden = true;
+  hud(); renderMoves();
+  $("endBox").hidden = false;
+}
+function nextEvent(id) {
+  if (id !== runId) return;   // a restart or skip happened: this timer chain is stale
+  const a = anim;
+  if (!a) return;
+  a.i++;
+  if (a.i >= a.ev.length) {
+    if (replay) {
+      replay.i++;
+      if (replay.i < G.history.length) return playReplayTurn();
+      return endReplay();
+    }
+    G.f = JSON.parse(JSON.stringify(a.final));
+    anim = null; busy = false;
+    $("stageTl").hidden = true;
+    if (G.tut != null) return tutAfterTurn(a);
+    if (G.f.lulu.hp <= 0 || G.f.yeti.hp <= 0) return finish();
+    G.turn++;
+    addLog("t", `Turn ${G.turn}`);
+    const hd = habitDist();
+    if (hd.share >= 0.4 && hd.top && G.noticed !== hd.top.id) { G.noticed = hd.top.id; addLog("emo", `The Yeti has noticed you keep using ${hd.top.name}. It will try to beat it.`); }
+    const em = a.ev[a.ev.length - 1];
+    if (em && em.cls === "emo" && em.text) showToast(KEYS.filter(k => emo(k, a.start[k].san).id !== emo(k).id));
+    ui();
+    return;
+  }
+  const e = a.ev[a.i];
+  a.from = JSON.parse(JSON.stringify(G.f));
+  a.to = e.f;
+  a.t0 = performance.now();
+  a.cur = e;
+  if (e.text && !replay) addLog(e.cls, e.text);
+  (e.pops || []).forEach(p => fx.push(Object.assign({ t0: performance.now() }, p)));
+  if (e.spark) fx.push({ spark: true, x: e.spark.x, y: e.spark.y, t0: performance.now() });
+  G.f = e.f;
+  hud(); if (replay) $("turnLbl").textContent = `REPLAY · TURN ${G.history[replay.i].turn} / ${G.history.length}`; else renderLog();
+  if (e.frame != null) tlCursor(e.frame);
+  const ms = replay ? TUNE.replayMs : TUNE.eventMs;
+  const myId = runId;
+  setTimeout(() => nextEvent(myId), e.text || (e.pops && e.pops.length) ? ms : (replay ? 10 : 30));
+}
+
+function finish() {
+  G.over = true;
+  const a = G.f.lulu.hp, m = G.f.yeti.hp;
+  $("endTitle").textContent = a <= 0 && m <= 0 ? "Draw" : m <= 0 ? "You read it" : "Yeti wins";
+  $("endText").textContent = m <= 0 && a > 0 ? `The Yeti falls in ${G.turn} turns and the path is open. Winning resets your Sanity to 0.` : a <= 0 && m > 0 ? "It read you first. Click the Yeti before each turn to see what its passive allows." : "You both drop at once.";
+  if (m <= 0 && a > 0) G.f.lulu.san = 0;
+  const S = G.stats;
+  const rows = [["Turns", G.turn], ["Your damage", S.dmg.lulu], ["Yeti's damage", S.dmg.yeti], ["Counter-hits you landed", S.counters.lulu], ["Counter-hits you took", S.counters.yeti], ["Hits you blocked", S.guarded.lulu], ["Your best combo", S.bestCombo.lulu], ["Times you were Scared", S.scared.lulu], ["Times the Yeti was Scared", S.scared.yeti]];
+  $("endStats").innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+  ui();
+  $("endBox").hidden = false;
+}
+
+const MOOD_PLAY = {
+  lulu: { scared: "Can only move this turn.", shivering: "Can't move toward the Yeti.", calm: "No limits.", focused: "Lunge and For Justice! [1] hit more.", reckless: "Attacks only, but 2 frames faster." },
+  yeti: { scared: "Runs away. Can only move.", sulking: "Backs off, throws boulders, guards more.", calm: "Balanced: steps in close and trades blows.", enraged: "Rushes in. Must attack you up close.", frenzy: "Attacks only, all-out." }
+};
+function showToast(keys) {
+  if (!keys.length) return;
+  const el = $("toast");
+  el.innerHTML = keys.map(k => { const e = emo(k); return `<div><b>${k === "lulu" ? "YOU ARE" : "YETI IS"} NOW ${e.name.toUpperCase()}</b> · ${e.ps}${k === "yeti" ? " " + MOOD_PLAY.yeti[e.id] : ""}</div>`; }).join("");
+  el.hidden = false; el.style.opacity = 1;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { el.style.opacity = 0; setTimeout(() => { el.hidden = true; }, 400); }, 4200);
+}
+// Frame timeline: Startup (yellow) → Active (red) → Recovery (blue); a move happens at the end of its startup.
+function tlRow(name, st, ac, rc, type, total) {
+  const pc = n => `${n / total * 100}%`;
+  const mv = type === "move";
+  return `<div class="ln"><div class="n">${name}</div><div class="trk"><span class="${mv ? "mo" : "s"}" style="width:${pc(st)}"></span>${ac ? `<span class="a" style="width:${pc(ac)}"></span>` : ""}<span class="r" style="width:${pc(rc)}"></span><div class="cur" style="left:0;display:none"></div></div></div>`;
+}
+function showTl(tl) {
+  const el = $("stageTl");
+  if (!tl) { el.hidden = true; return; }
+  el.dataset.total = tl.total;
+  el.innerHTML = `<div class="ftl">${tlRow("You", tl.lulu.st, tl.lulu.ac, tl.lulu.rc, tl.lulu.type, tl.total)}${tlRow("Yeti", tl.yeti.st, tl.yeti.ac, tl.yeti.rc, tl.yeti.type, tl.total)}<div class="lg">frame <span id="tlf">0</span> / ${tl.total}</div></div>`;
+  el.hidden = false;
+}
+function tlCursor(f) {
+  const el = $("stageTl"), total = +el.dataset.total || 1;
+  if (el.hidden) return;
+  el.querySelectorAll(".cur").forEach(c => { c.style.display = "block"; c.style.left = `calc(${Math.min(100, f / total * 100)}% - 1px)`; });
+  const n = $("tlf"); if (n) n.textContent = Math.min(f, total);
+}
+function compareHtml(s) {
+  if (!s || s === HOLD) return "";
+  const ys = peek && peek.k === "yeti" ? peek.s : null;
+  const L = { st: startOf("lulu", s), ac: s.ac || 0, rc: s.rc || 0 };
+  const rows = [["You: " + s.name, L, s.type]];
+  if (ys) rows.push(["Yeti: " + ys.name, { st: startOf("yeti", ys), ac: ys.ac || 0, rc: ys.rc || 0 }, ys.type]);
+  const total = Math.max(...rows.map(r => r[1].st + r[1].ac + r[1].rc));
+  let vd = "";
+  if (!ys) vd = `Hits on frame ${s.type === "move" ? "-" : L.st}. Click a Yeti skill to compare speed.`;
+  else {
+    const Y = rows[1][1];
+    const myHit = s.type !== "move" && !s.guard, itsHit = ys.type !== "move" && !ys.guard;
+    if (s.parry && ys.grab) vd = "Grabs go through Parry. Attack it or move away.";
+    else if (s.grab && ys.grab) vd = "Both grabbing: Throw Tech (no damage) if it's within 9 frames.";
+    else if (s.grab && ys.guard) vd = "Throws go through blocks and armor.";
+    else if (s.grab && itsHit) vd = L.st < Y.st ? `Your throw comes out first (${L.st} vs ${Y.st}).` : L.st === Y.st ? "Same frame: the throw wins." : `Its attack lands first (${Y.st} vs ${L.st}) and stops your grab.`;
+    else if (s.grab && ys.type === "move") vd = "Can't grab it while it's moving or jumping.";
+    else if (s.parry && itsHit) { const ok = heightOk(ys.h, sel ? sel.h : "high"), on = sel && sel.p === Y.st; vd = on && ok ? `Perfect Parry if it comes on frame ${Y.st}.` : `Block only: ${!ok ? `${(ys.h || "mid").toUpperCase()} needs ${ys.h === "low" ? "LOW" : "HIGH"}. ` : ""}${!on ? `It hits on frame ${Y.st}, you're timed for ${sel ? sel.p : "?"}.` : ""}`; }
+    else if (s.guard && itsHit) vd = Y.st >= L.st && Y.st < L.st + L.ac ? "Your guard is up when it hits." : "Your guard won't be up when it hits.";
+    else if (myHit && itsHit) vd = L.st < Y.st ? `You're faster (${L.st} vs ${Y.st}). If you reach, its move is cancelled.` : L.st > Y.st ? `It's faster (${Y.st} vs ${L.st}). If it reaches, yours is cancelled.` : "Same speed: you trade hits.";
+    else if (s.type === "move" && itsHit) vd = L.st < Y.st ? `You move on frame ${L.st}, before it hits (${Y.st}).` : `It hits on frame ${Y.st}, before you move (${L.st}).`;
+    else vd = "No clash: at most one of you attacks.";
+  }
+  return `<div class="ftl">${rows.map(r => tlRow(r[0], r[1].st, r[1].ac, r[1].rc, r[2], total)).join("")}<div class="vd">${vd}</div><div class="lg">■ startup ■ hitting ■ recovery</div></div>`;
+}
+
+// ---------- Tutorial: short, hands-on, scripted Yeti ----------
+const TUT = [
+  { title: "Who's who", text: "You are <b>LULU</b> (blue, left). The <b>YETI</b> (orange, right) is played by the computer: you never control it. <b>Click the Yeti</b> to read it.", need: "insp-yeti", pos: [440, 760] },
+  { title: "Read its skills", text: "Its <b>mood</b> decides which skills it may use and how it fights. Now <b>click any Yeti skill</b> (bottom right). The orange box on the stage shows where it would hit.", need: "peek-yeti", pos: [440, 760] },
+  { title: "Close the gap", text: "You're too far away to hit each other up close. Pick <b>Dash</b> (key Q), keep the slider toward the Yeti, then press <b>Lock in</b> (Enter).", yeti: { id: "lumber", p: 0 }, pos: [480, 760], hl: ['#groups .ic[data-id="dash"]', "#goBtn"], check: a => dist("lulu") <= 180, fail: "Still too far. Dash and push the slider toward the Yeti." },
+  { title: "Faster wins", text: "The Yeti is going to <b>Slam</b> (13 frames to hit). <b>Lunge</b> (key A) hits on frame 6. Pick it, compare the bars in the middle, and Lock in: you'll hit first and cancel the Slam.", yeti: { id: "slam" }, pos: [560, 660], hl: ['#groups .ic[data-id="lunge"]'], check: a => a.final.yeti.hp < a.start.yeti.hp && a.final.lulu.hp >= a.start.lulu.hp, fail: "The Slam landed. Pick a faster attack, like Lunge (6 frames)." },
+  { title: "For Justice!", text: "<b>For Justice!</b> (key S) works like your mod's stances: using it changes your stance, and <b>the same button turns into For Justice! [2]</b>, then [3]. Each part surges you further forward. Use it now.", yeti: { id: "lumber", p: 0 }, pos: [520, 700], hl: ['#groups .ic[data-id="fj1"]'], check: a => a.final.lulu.stance === "ForJustice2", fail: "Use For Justice! (key S)." },
+  { title: "Stance", text: "Your stance is now <b>For Justice! [2]</b> (see under your HP), and the button changed. Lunge and Joust are locked until the chain ends with [3]. The stance stays if you move or parry. Press <b>S</b> again for [2].", yeti: { id: "lumber", p: 0 }, hl: ['#groups .ic[data-id="fj2"]'], check: a => a.final.lulu.stance === "ForJustice3", fail: "Use For Justice! [2] (key S).", restart: 1 },
+  { title: "Parry", text: "You're <b>Staggered</b> (+4 frames on attacks), so the Yeti's <b>Swipe</b> beats them. Parry has no penalty. Pick <b>Parry</b> (Z), then <b>click the Yeti's Swipe</b>: that aims your parry at its hit frame (6) and height (HIGH, because Swipe hits mid). Lock in for a <b>Perfect Parry</b>.", yeti: { id: "swipe" }, pos: [560, 650], stag: true, hl: ['#groups .ic[data-id="parry"]', '#eskills .ic[data-id="swipe"]'], check: a => a.final.lulu.hp === a.start.lulu.hp, fail: "Not perfect: you blocked and took chip damage. Time the parry for frame 6, HIGH (click Swipe after picking Parry)." },
+  { title: "Grab", text: "The Yeti will raise <b>Ice Armor</b>, which blocks attacks (you'd only do 1/3 damage). Throws go straight through blocks and parries. <b>Grab</b> (key D): choose <b>Forward</b> or <b>Back Throw</b> (←/→), or a <b>Dash Grab</b> (↑) to lunge in from further away for +4 frames.", yeti: { id: "armor" }, pos: [560, 680], hl: ['#groups .ic[data-id="grab"]'], check: a => a.start.yeti.hp - a.final.yeti.hp >= 6, fail: "Attacks just get blocked. Use Grab (D)." },
+  { title: "Burst", text: "You're being comboed (see the HITS count). <b>Burst</b> (key C) is <b>Defensive</b> right now: invulnerable for 15 frames, resets their combo and knocks them away. You get 1 stock, and it refills over time. Both you and the Yeti have one.", yeti: { id: "swipe" }, pos: [560, 650], combo: 12, stag: true, hl: ['#groups .ic[data-id="burst"]'], check: a => a.P.lulu.s.burst && a.final.lulu.hp === a.start.lulu.hp, fail: "Use Burst (C) to escape." },
+  { title: "Sanity and mood", text: "Being counter-hit, Roars and Bear Hugs drain <b>Sanity</b> (the bar under your HP). Low Sanity makes you <b>Shivering</b>: you can't move toward the Yeti. Combos and counter-hits raise it. <b>Click Lulu</b> or her name to read your mood.", need: "insp-lulu", pos: [440, 760], san: -20, hl: ["#hudA .nm"] },
+  { title: "Ready", text: "Two last things: the Yeti <b>remembers</b> the moves you spam and starts beating them, and its mood changes how it fights (<b>Enraged</b> rushes in, <b>Sulking</b> backs off). Watch its glow and the hint above its head. Your <b>Joust</b> (X) is a super that costs 1 Light.", done: true }
+];
+function tutStart() {
+  $("intro").hidden = true; $("endBox").hidden = true;
+  newGame(); G.tut = 0; G.log = [{ cls: "t", text: "Tutorial" }];
+  tutSetup(); ui();
+}
+function tutSetup(msg) {
+  const t = TUT[G.tut];
+  closeInsp(); peek = null; sel = null;
+  if (t.pos) {
+    KEYS.forEach((k, i) => { Object.assign(G.f[k], fresh(k, t.pos[i] + TUNE.start - 600)); });
+    G.f.lulu.dir = 1; G.f.yeti.dir = -1;
+  }
+  if (t.stag) G.f.lulu.stag = true;
+  if (t.combo) G.f.lulu.combo = t.combo;
+  if (t.san != null) G.f.lulu.san = t.san;
+  G.tutMsg = msg || "";
+}
+function tutNext(msg) { G.tut++; tutSetup(msg); ui(); }
+function tutEvent(kind) {
+  if (!G || G.tut == null) return;
+  const t = TUT[G.tut];
+  if (t.need === kind) setTimeout(() => tutNext("Nice."), 350);
+}
+function tutAfterTurn(a) {
+  const t = TUT[G.tut];
+  if (t.check && t.check(a)) { setTimeout(() => tutNext("Nice, that worked."), 600); }
+  else if (t.restart) { G.tut -= t.restart; tutSetup(t.fail); }
+  else { tutSetup(t.fail || "Try again."); }
+  ui();
+}
+function tutEnd() { G.tut = null; $("tut").hidden = true; newGame(); }
+function renderTut() {
+  const el = $("tut");
+  if (!G || G.tut == null) { el.hidden = true; return; }
+  const t = TUT[G.tut];
+  el.innerHTML = `<div class="k"><span>Tutorial ${G.tut + 1}/${TUT.length} · ${t.title}</span><button type="button" id="tutSkip">Skip tutorial ✕</button></div>${G.tutMsg ? `<p class="msg">${G.tutMsg}</p>` : ""}<p>${t.text}</p>${t.done ? `<div class="row"><button class="go" type="button" id="tutGo">Start the real fight</button></div>` : ""}`;
+  el.hidden = false;
+  $("tutSkip").addEventListener("click", tutEnd);
+  if (t.done) $("tutGo").addEventListener("click", tutEnd);
+  applyTutHl();
+}
+function applyTutHl() {
+  document.querySelectorAll(".hl").forEach(x => x.classList.remove("hl"));
+  if (!G || G.tut == null || busy) return;
+  (TUT[G.tut].hl || []).forEach(q => document.querySelectorAll(q).forEach(x => x.classList.add("hl")));
+}
+const KEYMAP = { q: "dash", w: "roll", e: "jump", r: "djump", a: "lunge", s: "fj", d: "grab", z: "parry", x: "joust", c: "burst" };
+const KEYOF = Object.assign(Object.fromEntries(Object.entries(KEYMAP).map(([a, b]) => [b, a])), { fj1: "s", fj2: "s", fj3: "s" });
+
+function hud() {
+  KEYS.forEach(k => {
+    const f = G.f[k], e = emo(k), el = $(k === "lulu" ? "hudA" : "hudM");
+    const pct = f.hp / TUNE.hp * 100;
+    const spct = (f.san - TUNE.sanMin) / (TUNE.sanMax - TUNE.sanMin) * 100;
+    const ticks = EMOS[k].slice(1).map(x => `<div class="tk" style="left:${(x.min - TUNE.sanMin) / (TUNE.sanMax - TUNE.sanMin) * 100}%"></div>`).join("");
+    el.innerHTML = `<div class="nm" data-k="${k}">${k === "lulu" ? '<span class="who you">YOU</span>' : ""}${NAMES[k].name} · ${e.name}${k === "yeti" ? '<span class="who cpu" style="margin:0 0 0 6px">CPU</span>' : ""}</div>
+      <div class="bar ${k}"><b style="width:${pct}%"></b><i style="width:${pct}%"></i></div>
+      <div class="row"><span>HP ${f.hp}</span><span>SAN ${f.san > 0 ? "+" : ""}${f.san}</span><span class="lt">${Array.from({ length: TUNE.lightMax }, (_, i) => `<span class="${i < f.light ? "on" : ""}"></span>`).join("")}</span>${f.stag ? "<span>STAGGER</span>" : ""}${f.chill ? "<span class='ch'>CHILLED</span>" : ""}${f.stance && f.stance !== "Normal" ? `<span style="color:#ffd23a" title="Stance: ${stanceName(f.stance)}">STANCE FJ[${f.stance === "ForJustice2" ? 2 : 3}]</span>` : ""}<span title="Burst stock (fills over time and when you take damage)" style="color:${f.bursts ? "#ffd23a" : "#55606e"}">BURST ${f.bursts ? "■" : Math.round(f.bmeter / TUNE.burstMeter * 100) + "%"}</span>${f.combo ? `<span>${f.combo} HITS</span>` : ""}</div>
+      <div class="sanbar" title="Sanity: sets the mood. Click to read.">${ticks}<div class="m" style="left:calc(${spct}% - 1px)"></div></div>
+      <div class="sanlbl">SANITY → ${e.name}: ${e.ps}</div>`;
+    el.querySelector(".nm").addEventListener("click", () => openInsp(k));
+    el.querySelector(".sanbar").addEventListener("click", () => openInsp(k));
+  });
+  $("turnLbl").textContent = G.over ? "FIGHT OVER" : `TURN ${G.turn}`;
+  if (inspKey) renderInsp();
+}
+function renderLog() {
+  $("log").innerHTML = G.log.map(l => `<p class="${l.cls}">${l.text}</p>`).join("");
+  $("log").scrollTop = $("log").scrollHeight;
+}
+function ui() { hud(); renderLog(); renderMoves(); renderEnemy(); renderTut(); }
+
+function metaOf(k, s) {
+  const st = startOf(k, s), c = cost(k, s);
+  if (s.type === "move") return `${st}f`;
+  if (s.guard) return `${st}f · GUARD${c ? " · " + c + " LIGHT" : ""}`;
+  return `${st}f · ${hitsOf(k, s)}×${s.dmg}${c ? " · " + c + " LIGHT" : ""}`;
+}
+function skillCard(k, s) {
+  const why = blocked(k, s), st = startOf(k, s), h = hitsOf(k, s), c = cost(k, s);
+  const typ = s.type === "move" ? "Movement" : s.type === "atk" ? "Attack" : "Special";
+  const kv = [`<span>Startup <b>${st}f</b></span>`];
+  if (s.ac) kv.push(`<span>Active <b>${s.ac}f</b></span>`);
+  kv.push(`<span>Recovery <b>${s.rc}f</b></span>`);
+  if (s.type === "move") { const [lo, hi] = s.range || [0, 0]; kv.push(`<span>Range <b>${lo < 0 ? "back " + -lo : ""}${lo < 0 && hi > 0 ? " / " : ""}${hi > 0 ? "forward " + hi : ""}</b></span>`); }
+  else if (!s.guard) kv.push(`<span>Hits <b>${h}×${s.dmg} = ${h * s.dmg}</b></span>`, `<span>Reach <b>${s.box[0] < 0 ? "behind too, " : ""}${Math.max(Math.abs(s.box[0]), Math.abs(s.box[1]))}</b></span>`);
+  else kv.push(`<span>Guards frames <b>${st} to ${st + s.ac}</b></span>`);
+  kv.push(`<span>Light <b>${c}</b></span>`);
+  const fl = [];
+  if (s.ground) fl.push("ground only"); if (s.air) fl.push("air only"); if (s.jump) fl.push("jumps"); if (s.proj) fl.push("projectile, misses up close");
+  if (s.chill) fl.push("Chills on hit"); if (s.san) fl.push(`-${s.san} Sanity on hit`); if (s.guard && !s.parry) fl.push("half damage, no counter-hit");
+  if (s.parry) fl.push("perfect: 0 dmg · block: 1/3 chip"); if (s.grab) fl.push("throw: beats block, wins same-frame trades, techable"); if (s.fwd) fl.push(`surges forward ${s.fwd}`); if (s.invuln) fl.push("can't be hit while rolling"); if (s.clean) fl.push("ignores Stagger/Chill"); if (s.stances) fl.push(`stance: ${s.stances.map(stanceName).join("/")}`); if (s.setStance && s.setStance !== "Normal") fl.push(`→ ${stanceName(s.setStance)}`); if (s.box && !s.grab) fl.push(`hits ${(s.h || "mid").toUpperCase()}: parry ${s.h === "low" ? "LOW" : "HIGH"}`); if (s.burst) fl.push("Burst stock, 15f invulnerable");
+  return `<div class="card ${k}"><h5>${s.name} <small style="color:#8094ad;font-family:VT323;font-size:16px;text-transform:none">${typ}</small></h5><div class="kv">${kv.join("")}</div><div>${s.ds}</div>${fl.length ? `<div class="kv"><span>${fl.join(" · ")}</span></div>` : ""}${why ? `<div class="no">Right now: blocked by ${why}</div>` : ""}</div>`;
+}
+function setPeek(k, s) {
+  peek = peek && peek.k === k && peek.s === s ? null : { k, s };
+  if (k === "yeti") { everPeeked = true; tutEvent("peek-yeti"); if (sel && sel.s.parry && peek) { parryAim(); renderMoves(); } }
+  renderEnemy();
+  if (sel) showMid();
+  if (inspKey) renderInsp();
+}
+const ICONS = {
+  dash: "M3 12h14M13 7l5 5-5 5M3 7h5M3 17h5",
+  roll: "M20 12a8 8 0 1 1-3-6M18 2v5h-5",
+  jump: "M12 20V5M6 11l6-6 6 6",
+  djump: "M12 21V10M7 14l5-5 5 5M7 8l5-5 5 5",
+  lunge: "M2 12h16M14 8l6 4-6 4",
+  fj1: "M3 12h12M12 8l5 4-5 4M20 8v8",
+  fj2: "M3 12h10M10 8l5 4-5 4M18 8v8M21 8v8",
+  fj3: "M2 12h8M7 8l5 4-5 4M15 8v8M18 8v8M21 8v8",
+  grab: "M6 20V10M10 20V5M14 20V5M18 20V10M6 15h12",
+  parry: "M5 3l14 18M19 3L5 21",
+  joust: "M2 13h17l3-1-3-1H2M5 13v7M5 6h5v5",
+  burst: "M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M19 5l-4 4M9 15l-4 4",
+  yburst: "M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M19 5l-4 4M9 15l-4 4",
+  step: "M4 12h13M12 6l6 6-6 6",
+  slide: "M3 7l6 5-6 5M11 7l6 5-6 5M20 6v12",
+  leap: "M12 20V5M6 11l6-6 6 6",
+  hook: "M6 21V9a6 6 0 0 1 12 0v3M14 9l4 4 4-4",
+  jab: "M3 12h13M13 7l7 5-7 5",
+  swing: "M4 5q15 1 15 14M14 19h6v-6",
+  rise: "M6 21q0-13 12-15M12 4h7v7",
+  sweep: "M3 17q9-10 18 0M16 13l5 4-6 2",
+  icicle: "M12 2l5 9-5 11-5-11z",
+  drop: "M12 3v14M6 12l6 7 6-7M5 22h14",
+  wall: "M4 4h16v16H4zM4 12h16M12 4v8M8 12v8M16 12v8",
+  avalanche: "M2 21l7-14 7 14zM12 21l5-9 5 9z",
+  lumber: "M5 18h6v3H5zM13 11h6v3h-6zM6 12l3-6M14 6l3 3",
+  charge: "M3 8h6M3 16h6M6 12h9M13 7l6 5-6 5",
+  bound: "M4 20q4-14 16-14M15 3l5 3-3 5",
+  swipe: "M5 4l5 16M11 3l5 17M17 4l4 14",
+  slam: "M7 3h10v9H7zM12 12v6M7 21h10",
+  stomp: "M12 3v9M5 12h14l-3 9H8z",
+  boulder: "M6 8l5-4 7 3 3 7-4 6-8 1-5-6z",
+  hug: "M5 5q9 7 0 14M19 5q-9 7 0 14M9 12h6",
+  flop: "M12 3v12M5 12l7 8 7-8M4 22h16",
+  roar: "M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M12 12m-10 0a10 10 0 1 0 20 0",
+  armor: "M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z",
+  blizzard: "M12 3v18M4 7l16 10M4 17l16-10"
+};
+const iconSvg = id => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" shape-rendering="crispEdges"><path d="${ICONS[id] || "M4 12h16"}"/></svg>`;
+const catOf = s => s.guard ? "Defense" : s.type === "move" ? "Movement" : s.type === "atk" ? "Attack" : "Special";
+const CAT_L = ["Defense", "Special", "Attack", "Movement"];
+const CAT_R = ["Movement", "Attack", "Special", "Defense"];
+let hov = null;
+function groupHtml(k, cats, activeS) {
+  const list = SKILLS[k];
+  return cats.map(cat => {
+    const items = list.filter(s => catOf(s) === cat && (!s.fj || k !== "lulu" || s === fjNow()));
+    if (cat === "Movement" && k === "lulu" && list.every(s => blocked("lulu", s))) items.push(HOLD);
+    if (!items.length) return "";
+    const act = activeS && items.includes(activeS);
+    return `<div class="grp"><div class="gl ${act ? "on" : ""}">${act ? activeS.name : cat}</div><div class="icons">${items.map(s => {
+      const why = blocked(k, s);
+      return `<button type="button" class="ic c-${cat} ${activeS === s ? "sel" : ""} ${why ? "off" : ""}" data-k="${k}" data-id="${s.id}" title="${s.name}${k === "lulu" && KEYOF[s.id] ? " [" + KEYOF[s.id].toUpperCase() + "]" : ""}${why ? " (" + why + ")" : ""}">${k === "lulu" && KEYOF[s.id] ? `<span class="key">${KEYOF[s.id].toUpperCase()}</span>` : ""}${iconSvg(s.id)}</button>`;
+    }).join("")}</div></div>`;
+  }).join("");
+}
+function skillInfo(k, s) {
+  const why = blocked(k, s);
+  return `${s.ds}${why ? " [" + why + "]" : ""}`;
+}
+function wireIcons(root, k, onClick) {
+  root.querySelectorAll(".ic").forEach(b => {
+    const s = b.dataset.id === "hold" ? HOLD : SKILLS[k].find(x => x.id === b.dataset.id);
+    b.addEventListener("click", () => onClick(s));
+    b.addEventListener("mouseenter", () => { hov = { k, s }; showMid(); });
+    b.addEventListener("mouseleave", () => { hov = null; showMid(); });
+  });
+}
+function showMid() {
+  const s = hov && hov.k === "lulu" ? hov.s : sel ? sel.s : null;
+  if (busy) { $("selname").textContent = ""; $("desc").textContent = "Playing out..."; $("ftl").innerHTML = ""; return; }
+  if (G.over) { $("selname").textContent = ""; $("desc").textContent = ""; $("ftl").innerHTML = ""; return; }
+  $("ftl").innerHTML = "";
+  if (!s) { $("selname").textContent = "Your turn: pick a skill"; $("desc").textContent = "Left: your skills (keys shown). Right: the Yeti's skills. Click them to see where they hit."; return; }
+  $("selname").textContent = s.name;
+  $("desc").textContent = `${metaOf("lulu", s)} · ${skillInfo("lulu", s)}${G.f.lulu.stag && s.type !== "move" && !s.guard && !s.clean ? " (Staggered +4f)" : ""}${predictable("lulu", s) ? " (Predictable +3f)" : ""}`;
+  $("ftl").innerHTML = compareHtml(s);
+}
+function renderEnemy() {
+  const el = $("eskills");
+  el.innerHTML = `<div class="cap">Yeti's skills · computer · click to inspect</div>` + groupHtml("yeti", CAT_R, peek && peek.k === "yeti" ? peek.s : null);
+  el.classList.toggle("pulse", !everPeeked && !busy && !(G && G.over));
+  wireIcons(el, "yeti", s => setPeek("yeti", s));
+  applyTutHl();
+  $("epeek").innerHTML = peek && peek.k === "yeti" ? skillCard("yeti", peek.s) : "";
+}
+function renderMoves() {
+  const el = $("groups");
+  el.innerHTML = `<div class="cap">Your skills (Lulu)</div>` + groupHtml("lulu", CAT_L, sel ? sel.s : null);
+  wireIcons(el, "lulu", pickLulu);
+  const p = $("param");
+  if (sel && sel.s.grab) {
+    p.innerHTML = `<div class="val" id="rv">${sel.tdir === "back" ? "Back" : "Forward"} Throw${sel.dash ? " · Dash Grab (+4f, lunges in)" : ""}</div><div class="hgt"><button type="button" data-t="fwd" class="${sel.tdir !== "back" ? "on" : ""}">FORWARD →</button><button type="button" data-t="back" class="${sel.tdir === "back" ? "on" : ""}">← BACK</button><button type="button" data-d="1" class="${sel.dash ? "on" : ""}">DASH ↑</button></div>`;
+    p.querySelectorAll(".hgt button").forEach(b => b.addEventListener("click", () => { if (b.dataset.t) sel.tdir = b.dataset.t; else sel.dash = !sel.dash; renderMoves(); }));
+  } else if (sel && sel.s.parry) {
+    p.innerHTML = `<div class="val" id="rv"></div><div class="hgt"><button type="button" data-h="high" class="${sel.h === "high" ? "on" : ""}">HIGH ↑</button><button type="button" data-h="low" class="${sel.h === "low" ? "on" : ""}">LOW ↓</button></div><input type="range" id="rng" min="1" max="20" step="1" value="${sel.p}">`;
+    const r = $("rng");
+    const show = () => $("rv").textContent = `Parry ${sel.h.toUpperCase()} on frame ${sel.p}${sel.p >= 20 ? "+" : ""}${G.f.lulu.whiffBlock ? " · re-block: no perfect" : ""}`;
+    show();
+    r.addEventListener("input", () => { sel.p = +r.value; show(); });
+    p.querySelectorAll(".hgt button").forEach(b => b.addEventListener("click", () => { sel.h = b.dataset.h; renderMoves(); }));
+  } else if (sel && sel.s.type === "move" && sel.s !== HOLD) {
+    const [lo, hi] = paramRange("lulu", sel.s);
+    p.innerHTML = `<div class="val" id="rv"></div><input type="range" id="rng" min="${lo}" max="${hi}" step="10" value="${sel.p}">`;
+    const r = $("rng");
+    const show = () => $("rv").textContent = `${sel.p > 0 ? "toward " + sel.p : sel.p < 0 ? "back " + -sel.p : "in place"}`;
+    show();
+    r.addEventListener("input", () => { sel.p = +r.value; show(); });
+  } else p.innerHTML = "";
+  $("mpeek").innerHTML = sel && sel.s !== HOLD ? skillCard("lulu", sel.s) : "";
+  showMid();
+  $("goBtn").disabled = busy || G.over || !sel;
+  applyTutHl();
+}
+function pickLulu(s) {
+  if (busy || G.over) return;
+  const why = blocked("lulu", s);
+  if (why) { $("desc").textContent = `${s.name}: ${why}`; return; }
+  const [lo, hi] = paramRange("lulu", s);
+  sel = { s, p: clamp(s.def || 0, lo, hi), h: "high", tdir: "fwd", dash: false };
+  if (s.parry) parryAim();
+  renderMoves();
+}
+// Clicking a Yeti attack while Parry is picked aims the parry at that attack's hit frame and height.
+function parryAim() {
+  if (!sel || !sel.s.parry || !(peek && peek.k === "yeti" && peek.s.box)) { if (sel && sel.s.parry && !sel.p) sel.p = 10; return; }
+  sel.p = clamp(startOf("yeti", peek.s), 1, 20); sel.h = peek.s.h === "low" ? "low" : "high";
+}
+
+function openInsp(k) { $("tip").hidden = true; inspKey = k; renderInsp(); tutEvent("insp-" + k); }
+function closeInsp() { inspKey = null; $("insp").hidden = true; }
+function renderInsp() {
+  const k = inspKey, f = G.f[k], e = emo(k), el = $("insp");
+  el.className = `insp ${k === "lulu" ? "left" : "right"} ${k}`;
+  const pct = (f.san - TUNE.sanMin) / (TUNE.sanMax - TUNE.sanMin) * 100;
+  const ticks = EMOS[k].slice(1).map(x => `<div class="tk" style="left:${(x.min - TUNE.sanMin) / (TUNE.sanMax - TUNE.sanMin) * 100}%"></div>`).join("");
+  el.innerHTML = `<button class="x" type="button" aria-label="Close">×</button>
+    <h2>${NAMES[k].name}<small>${NAMES[k].title}</small></h2>
+    <div class="stt"><span>HP ${f.hp}/${TUNE.hp}</span><span>Light ${f.light}/${TUNE.lightMax}</span>${f.stag ? `<span>Staggered +${TUNE.stagger} frames</span>` : ""}${f.chill ? `<span>Chilled +${TUNE.chill} frames</span>` : ""}${f.y > 0 ? "<span>Airborne</span>" : ""}</div>
+    <div class="now"><div class="k">Emotion now · Sanity ${f.san > 0 ? "+" : ""}${f.san}</div><div class="e">${e.name}</div><div class="p">${e.ps}</div></div>
+    ${k === "yeti" ? `<div class="p" style="font-size:16px;margin:4px 0">How it fights now: <b>${MOOD_PLAY.yeti[e.id]}</b>${(() => { const hd = habitDist(); return hd.share >= 0.3 && hd.top ? `<br>It has noticed you use <b>${hd.top.name}</b> a lot (${Math.round(hd.share * 100)}%) and will try to beat it.` : ""; })()}</div>` : ""}
+    <div class="san">${ticks}<div class="m" style="left:calc(${pct}% - 1px)"></div></div>
+    <h4>Emotions</h4>
+    ${EMOS[k].map(x => `<div class="emo ${x.id === e.id ? "on" : ""}"><div><b>${x.name}</b><i>${x.min === x.max ? x.min : x.min + " to " + x.max}</i></div><div>${x.ps}</div></div>`).join("")}
+    <h4>Skills right now</h4>
+    <div class="kv" style="font-size:12px;color:#8094ad">Click a skill to read it.</div>
+    ${peek && peek.k === k ? skillCard(k, peek.s) : ""}
+    ${SKILLS[k].map(s => { const why = blocked(k, s); return `<div class="sk click ${why ? "off" : ""} ${peek && peek.s === s ? "pk" : ""}" data-id="${s.id}"><div>${s.name} <span>${metaOf(k, s)}</span></div><span>${why || ""}</span></div>`; }).join("")}
+`;
+  el.hidden = false;
+  el.querySelector(".x").addEventListener("click", closeInsp);
+  el.querySelectorAll(".sk.click").forEach(r => r.addEventListener("click", () => setPeek(k, SKILLS[k].find(x => x.id === r.dataset.id))));
+}
+
+// World: 1200 x 260 low-res pixels (4800 x ~1000 game units). The camera shows a window of it
+// scaled by a whole-number factor (zoom), so pixels always stay square and crisp.
+const PX = 4, WW = 1200, WH = 260, FLW = WH - 16;
+const ZOOMS = [2, 3, 4, 5, 6];
+const cam = { x: 0, y: WH - 130, scale: 4, auto: true, ready: false };
+let LW = 300, LH = 130, FL = FLW;        // current view size (low px); FL kept for world ground row
+const C = { bg: "#050608", navy: "#1f2b55", orange: "#ff8a2a", ice: "#8fe3ff", ice2: "#d9f6ff", gold: "#ffd23a", white: "#ffffff" };
+const low = document.createElement("canvas"); low.width = LW; low.height = LH;
+const lc = low.getContext("2d");
+const wlx = x => Math.round(x / PX);              // world low-res x
+const wly = y => FLW - Math.round(y / PX);        // world low-res y (ground = FLW)
+let camX = 0, camY = 0;                           // integer camera offset used for this frame
+const lx = x => wlx(x) - camX;                    // view coordinates
+const ly = y => wly(y) - camY;
+function setZoom(scale, manual) {
+  const i = ZOOMS.indexOf(scale);
+  cam.scale = ZOOMS[clamp(i < 0 ? 2 : i, 0, ZOOMS.length - 1)];
+  if (manual) cam.auto = false;
+  LW = Math.round(cv.width / cam.scale); LH = Math.round(cv.height / cam.scale);
+  low.width = LW; low.height = LH;
+  if (typeof resizeFx === "function") resizeFx();
+  const zl = document.getElementById("zoomLbl"); if (zl) zl.textContent = (cam.auto ? "AUTO " : "") + cam.scale + "x";
+}
+function zoomStep(d) { const i = ZOOMS.indexOf(cam.scale); setZoom(ZOOMS[clamp(i + d, 0, ZOOMS.length - 1)], true); }
+function updateCamera(F, snap) {
+  const a = F.lulu, b = F.yeti;
+  if (cam.auto) {   // auto: the closest zoom that keeps both fighters (plus room for weapons) in view
+    const need = Math.abs(wlx(a.x) - wlx(b.x)) + 150;
+    let best = ZOOMS[0];
+    for (const z of ZOOMS) if (z <= 4 && cv.width / z >= need) best = z;   // auto stays at 4x or wider; 5x/6x are manual
+    if (best !== cam.scale) setZoom(best, false);
+  }
+  const midX = (wlx(a.x) + wlx(b.x)) / 2;
+  const top = Math.min(wly(a.y + BODY.lulu.h), wly(b.y + BODY.yeti.h)) - 10;   // keep the ground in view; rise only for jumps
+  const tx = clamp(midX - LW / 2, 0, WW - LW);
+  const ty = clamp(Math.min(WH - LH, top), 0, WH - LH);
+  if (snap || !cam.ready) { cam.x = tx; cam.y = ty; cam.ready = true; }
+  else { cam.x += (tx - cam.x) * 0.12; cam.y += (ty - cam.y) * 0.12; }
+  camX = Math.round(cam.x); camY = Math.round(cam.y);
+}
+
+const FONT = {
+  A: "010101111101101", B: "110101110101110", C: "011100100100011", D: "110101101101110", E: "111100110100111",
+  F: "111100110100100", G: "011100101101011", H: "101101111101101", I: "111010010010111", J: "001001001101010",
+  K: "101101110101101", L: "100100100100111", M: "101111111101101", N: "110101101101101", O: "010101101101010",
+  P: "110101110100100", Q: "010101101110011", R: "110101110101101", S: "011100010001110", T: "111010010010010",
+  U: "101101101101111", V: "101101101101010", W: "101101111111101", X: "101101010101101", Y: "101101010010010",
+  Z: "111001010100111", "0": "111101101101111", "1": "010110010010111", "2": "110001010100111", "3": "110001010001110",
+  "4": "101101111001001", "5": "111100110001110", "6": "011100110101010", "7": "111001010010010", "8": "010101010101010",
+  "9": "010101011001110", "-": "000000111000000", "+": "000010111010000", " ": "000000000000000", "!": "010010010000010"
+};
+function pixText(c, str, x, y, col, center) {
+  str = String(str).toUpperCase();
+  const w = str.length * 4 - 1;
+  const sx = Math.round(center ? x - w / 2 : x);
+  const draw = (ox, oy, cc) => {
+    c.fillStyle = cc;
+    for (let i = 0; i < str.length; i++) {
+      const g = FONT[str[i]] || FONT[" "];
+      for (let j = 0; j < 15; j++) if (g[j] === "1") c.fillRect(sx + i * 4 + (j % 3) + ox, y + Math.floor(j / 3) + oy, 1, 1);
+    }
+  };
+  draw(1, 1, "#000");
+  draw(0, 0, col);
+}
+
+const SHEETS = {
+  // Lulu uses the Don Quixote sprites from the YOMI Hustle mod (frames cropped from 128x128, feet on row 81 → 65 here).
+  lulu: { src: "sprites/donquixote.png", fw: 104, fh: 96, ax: 40, ay: 65, cols: 9, rows: 17, anims: {"idle":{"n":1,"fps":1,"loop":true,"key":0},"walk":{"n":1,"fps":1,"loop":true,"key":0},"dashback":{"n":1,"fps":1,"loop":true,"key":0},"roll":{"n":1,"fps":1,"loop":true,"key":0},"air":{"n":1,"fps":1,"loop":true,"key":0},"lunge":{"n":5,"fps":12,"loop":false,"key":2},"fj1":{"n":5,"fps":12,"loop":false,"key":2},"fj2":{"n":4,"fps":10,"loop":false,"key":2},"fj3":{"n":9,"fps":16,"loop":false,"key":5},"joust":{"n":7,"fps":12,"loop":false,"key":3},"grab":{"n":8,"fps":14,"loop":false,"key":2},"parry":{"n":1,"fps":1,"loop":true,"key":0},"burst":{"n":1,"fps":1,"loop":true,"key":0},"hurt":{"n":1,"fps":1,"loop":true,"key":0},"hurtair":{"n":1,"fps":1,"loop":true,"key":0},"parrylow":{"n":1,"fps":1,"loop":true,"key":0},"tech":{"n":1,"fps":1,"loop":true,"key":0}}, poses: ["idle", "walk", "dashback", "roll", "air", "lunge", "fj1", "fj2", "fj3", "joust", "grab", "parry", "burst", "hurt", "hurtair", "parrylow", "tech"] },
+  // Yeti: animated sheet built from YetiIdleNew.png (one row per pose)
+  // Yeti sheet taken from the user's Tell Prototype file (orange Yeti, 78x58 frames)
+  yeti: { src: "sprites/yeti_tell.png", fw: 78, fh: 58, ax: 39, ay: 56, cols: 8, rows: 14, anims: {"idle":{"n":1,"fps":6,"loop":false,"key":0},"walk":{"n":1,"fps":6,"loop":false,"key":0},"charge":{"n":1,"fps":6,"loop":false,"key":0},"air":{"n":1,"fps":6,"loop":false,"key":0},"swipe":{"n":7,"fps":14,"loop":false,"key":4,"hit":4},"slam":{"n":1,"fps":6,"loop":false,"key":0},"stomp":{"n":8,"fps":14,"loop":false,"key":5,"hit":5},"toss":{"n":1,"fps":6,"loop":false,"key":0},"grab":{"n":1,"fps":6,"loop":false,"key":0},"flop":{"n":1,"fps":6,"loop":false,"key":0},"roar":{"n":7,"fps":10,"loop":false,"key":5,"hit":5},"armor":{"n":1,"fps":6,"loop":false,"key":0},"blizzard":{"n":1,"fps":6,"loop":false,"key":0},"hurt":{"n":1,"fps":6,"loop":false,"key":0}}, poses: ["idle",  "walk",  "charge",  "air",  "swipe",  "slam",  "stomp",  "toss",  "grab",  "flop",  "roar",  "armor",  "blizzard",  "hurt"] }
+};
+const POSE_ALIAS = { lulu: { stand: "idle" }, yeti: { stand: "idle" } };
+function loadSheets() {
+  return Promise.all(KEYS.map(k => new Promise(res => {
+    const S = SHEETS[k], img = new Image();
+    img.onload = () => {
+      let src = img;
+      
+      const mk = (flip, white) => {
+        const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+        const x = c.getContext("2d");
+        if (flip) {
+          for (let i = 0; i < (S.rows ? S.rows * S.cols : S.poses.length); i++) {
+            const sx = (i % S.cols) * S.fw, sy = Math.floor(i / S.cols) * S.fh;
+            x.save(); x.translate(sx + S.fw, sy); x.scale(-1, 1); x.drawImage(src, sx, sy, S.fw, S.fh, 0, 0, S.fw, S.fh); x.restore();
+          }
+        } else x.drawImage(src, 0, 0);
+        if (white) { x.globalCompositeOperation = "source-atop"; x.fillStyle = white === true ? "#ffffff" : white; x.fillRect(0, 0, c.width, c.height); }
+        return c;
+      };
+      const fl = k === "lulu" ? "#ff6a3a" : true;   // Don Quixote is already white, so flash him orange on hit
+      S.img = { r: mk(false, false), l: mk(true, false), rw: mk(false, fl), lw: mk(true, fl) };
+      S.tint = col => (S.tints || (S.tints = {}))[col] || (S.tints[col] = { r: mk(false, col), l: mk(true, col) });
+      res();
+    };
+    img.src = S.src;
+  })));
+}
+// The Yeti sheet is a black silhouette: give it shaggy pale fur with a darker rim so it reads as a character.
+function furYeti(img) {
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height;
+  const dark = i => p[i + 3] > 128 && p[i] < 60 && p[i + 1] < 60 && p[i + 2] < 60;
+  const out = new Uint8ClampedArray(p);
+  for (let y = 0; y < H; y++) for (let X = 0; X < W; X++) {
+    const i = (y * W + X) * 4;
+    if (!dark(i)) continue;
+    let edge = 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]]) {
+      const xx = X + dx, yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= W || yy >= H || !dark(((yy * W) + xx) * 4)) edge++;
+    }
+    const shag = ((X * 7 + y * 13) % 11) === 0;
+    const col = edge >= 2 ? [120, 140, 170] : edge === 1 || shag ? [176, 194, 216] : [222, 232, 244];
+    out[i] = col[0]; out[i + 1] = col[1]; out[i + 2] = col[2];
+  }
+  d.data.set(out); x.putImageData(d, 0, 0);
+  return c;
+}
+const AURA = {
+  lulu: { scared: "#7fa8ff", shivering: "#7fa8ff", focused: "#4fe3ff", reckless: "#ffd23a" },
+  yeti: { scared: "#7fa8ff", sulking: "#4f6fff", enraged: "#ff3a2a", frenzy: "#ffd23a" }
+};
+const poseClock = {};
+function drawFighterLow(k, f, alpha, flash, mood) {
+  const S = SHEETS[k];
+  if (!S.img) return;
+  const pose = S.poses.includes(f.pose) ? f.pose : (f.pose === "hurtair" && S.poses.includes("hurt")) ? "hurt" : "idle";
+  let i = S.poses.indexOf(pose), col = 0, row = 0;
+  if (S.anims) {
+    const sp = S.anims[pose];
+    if (alpha < 1) col = sp.key;
+    else {
+      const c = poseClock[k] || (poseClock[k] = { pose: "", t0: 0 });
+      const now = performance.now();
+      if (c.pose !== pose || c.pk !== f.pk) { c.pose = pose; c.pk = f.pk; c.t0 = now; }
+      const e = Math.floor((now - c.t0) / 1000 * sp.fps);
+      if (sp.hit != null && f.pseg === "pre") col = Math.min(sp.hit - 1, e);          // wind-up frames, then hold until the move is active
+      else if (sp.hit != null && f.pseg === "post") col = Math.min(sp.n - 1, sp.hit + e);   // the hit frame lands on the active frame
+      else col = f.pf != null ? Math.min(sp.n - 1, f.pf) : sp.loop ? e % sp.n : Math.min(sp.n - 1, e);   // pf: hold one frame (windup)
+    }
+    row = i;
+  } else { col = i % S.cols; row = Math.floor(i / S.cols); }
+  const left = f.dir < 0;
+  const im = S.img[(left ? "l" : "r") + (flash ? "w" : "")];
+  const sx = col * S.fw, sy = row * S.fh;
+  const ax = left ? S.fw - S.ax : S.ax;
+  let ox = 0, oy = 0;
+  if (mood && alpha >= 1) {
+    const now = performance.now(), m = mood.id;
+    if (m === "scared" || m === "shivering") ox = Math.floor(now / 70) % 2 ? 1 : 0;
+    if (m === "sulking") oy = 1;
+    if (m === "frenzy" || m === "reckless") ox = Math.floor(now / 50) % 3 - 1;
+    const col = AURA[k][m];
+    if (col && S.tint) {
+      const t = S.tint(col)[left ? "l" : "r"];
+      lc.globalAlpha = 0.45 + 0.35 * Math.sin(now / (m === "enraged" || m === "frenzy" ? 90 : 260));
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) lc.drawImage(t, sx, sy, S.fw, S.fh, lx(f.x) - ax + ox + dx, ly(f.y) - S.ay + oy + dy, S.fw, S.fh);
+      lc.globalAlpha = 1;
+    }
+    if (m === "enraged" || m === "frenzy") {   // steam puffs off the head
+      lc.fillStyle = m === "enraged" ? "#ff8a6a" : "#ffd23a";
+      const top = ly(f.y + BODY[k].h);
+      for (let i = 0; i < 4; i++) { const ph = ((now / 600) + i / 4) % 1; lc.globalAlpha = 1 - ph; lc.fillRect(lx(f.x) - 6 + i * 4 + Math.round(Math.sin(ph * 6 + i) * 2), top - Math.round(ph * 10), 1, 1); }
+      lc.globalAlpha = 1;
+    }
+  }
+  lc.globalAlpha = alpha;
+  lc.drawImage(im, sx, sy, S.fw, S.fh, lx(f.x) - ax + ox, ly(f.y) - S.ay + oy, S.fw, S.fh);
+  lc.globalAlpha = 1;
+}
+
+let bgCache = null;
+function background() {
+  if (bgCache) return bgCache;
+  const b = document.createElement("canvas"); b.width = WW; b.height = WH;
+  const c = b.getContext("2d");
+  c.fillStyle = C.bg; c.fillRect(0, 0, WW, WH);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 260; i++) { c.fillStyle = rnd() < 0.7 ? "#5d7ea8" : "#cfe3ff"; c.fillRect(Math.floor(rnd() * WW), Math.floor(rnd() * (FLW - 60)), 1, 1); }
+  c.fillStyle = "#13305a";   // a huge pale moon arc far away
+  for (let a = 0; a < Math.PI; a += 0.002) { const x = Math.round(520 + Math.cos(a + Math.PI) * 300), y = Math.round(FLW + 20 - Math.sin(a) * 260); if (y >= 0 && y < FLW && x >= 0 && x < WW) c.fillRect(x, y, 1, 1); }
+  // mountain ranges: random peaks across the world, far (taller, lighter edge) and near
+  const ridge = (step, minH, maxH, fill, edge, sd) => {
+    seed = sd; const pts = []; for (let x = -step; x <= WW + step; x += step * (0.6 + rnd() * 0.8)) pts.push([x, FLW - (minH + rnd() * (maxH - minH))]);
+    for (let x = 0; x < WW; x++) {
+      let y = FLW;
+      for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]; if (x >= x0 && x <= x1) y = Math.round(y0 + (y1 - y0) * (x - x0) / (x1 - x0)); }
+      c.fillStyle = fill; c.fillRect(x, y, 1, FLW - y);
+      c.fillStyle = edge; c.fillRect(x, y, 1, 1);
+    }
+  };
+  ridge(46, 70, 150, "#0a1222", "#2c4a78", 11);
+  ridge(34, 20, 60, "#070c16", "#1f3658", 29);
+  c.fillStyle = "#e9f3ff"; c.fillRect(0, FLW, WW, 1);
+  for (let x = 0; x < WW; x += 25) c.fillRect(x, FLW + 1, 1, 4);
+  c.fillStyle = "#4a7fb0";
+  for (let x = 3; x < WW; x += 7) c.fillRect(x, FLW + 2, 2, 1);
+  c.fillStyle = "#2c4a78";   // world edge markers
+  for (const ex of [wlx(TUNE.minX) - 12, wlx(TUNE.maxX) + 12]) for (let y = FLW - 40; y < FLW; y += 3) c.fillRect(ex, y, 1, 2);
+  return bgCache = b;
+}
+
+const snow = Array.from({ length: 160 }, (_, i) => ({ x: (i * 37) % 600, y: (i * 53) % 260, s: 0.15 + ((i * 13) % 10) / 40 }));
+
+function dashRect(b, col, fill) {
+  const x0 = lx(b.x0), x1 = lx(b.x1), y0 = ly(b.y1), y1 = ly(b.y0);
+  if (fill) { lc.fillStyle = fill; lc.fillRect(x0, y0, x1 - x0, y1 - y0); }
+  lc.fillStyle = col;
+  for (let x = x0; x <= x1; x++) if (x % 3 !== 0) { lc.fillRect(x, y0, 1, 1); lc.fillRect(x, y1 - 1, 1, 1); }
+  for (let y = y0; y <= y1; y++) if (y % 3 !== 0) { lc.fillRect(x0, y, 1, 1); lc.fillRect(x1, y, 1, 1); }
+}
+
+const ORANGE_RAMP = ["#1a0a04", "#4a1a06", "#8a3a10", "#c8561a", "#ff8a2a", "#ffc27a", "#fff1dc", "#ffffff"];
+const SNOW_RAMP = ["#101826", "#24364e", "#4a6584", "#8aa6c4", "#c6d8ea", "#eaf3fb", "#ffffff"];
+const METAL = ["#0c0e14", "#1c2230", "#2e3648", "#4a5468", "#6e7a90", "#9aa6ba", "#d0d8e6", "#ffffff"];
+const METAL_SPARKS = ["#ffffff", "#d0d8e6", "#9aa6ba", "#6e7a90"];
+const FX_FOR = {
+  // Lulu fights with a lance: every attack is a pixelfx thrust (reach matched to the move's hitbox), in steel colours
+  lunge: [["thrust", { reach: 50, dy: 4, seed: 4 }]],
+  fj1: [["thrust", { reach: 54, dy: 5, seed: 7 }]],
+  fj2: [["thrust", { reach: 56, dy: 3, seed: 9 }]],
+  fj3: [["thrust", { reach: 58, dy: 3, seed: 12 }]],
+  joust: [["thrust", { reach: 54, dy: 4, seed: 15 }]],
+  burst: [["critHit", { self: true }]],
+  grab: [], yburst: [["frostNova", { pal: ORANGE_RAMP }]],
+  jab: [["thrust", {}]], swing: [["heavyCleave", {}]], rise: [["uppercut", {}]], sweep: [["spearSweep", {}]],
+  icicle: [["iceLance", { travel: true }]], drop: [["heavyLanding", {}], ["iceShatter", { at: "target" }]],
+  wall: [["shieldBlock", {}]], avalanche: [["frostNova", {}]], slide: [["snowflakeBurst", { small: true }]],
+  swipe: [["clawSwipe", { pal: ORANGE_RAMP }]], slam: [["hammerSmash", { pal: ORANGE_RAMP }]], stomp: [["quake", { pal: SNOW_RAMP }]],
+  boulder: [["boulder", { pal: SNOW_RAMP }]], hug: [["bluntHit", { pal: ORANGE_RAMP, at: "target" }]], flop: [["heavyLanding", { pal: SNOW_RAMP }]],
+  roar: [["groundSlam", { pal: ORANGE_RAMP }]], armor: [["shieldBlock", { pal: ORANGE_RAMP }]], blizzard: [["blizzardVortex", { stopAfter: 1.4, at: "mid" }]]
+};
+let fxFrame = PFX.createFrame(LW, LH);
+let fxImg = new ImageData(LW, LH);
+const fxCanvas = document.createElement("canvas"); fxCanvas.width = LW; fxCanvas.height = LH;
+const fxCtx = fxCanvas.getContext("2d");
+function resizeFx() {   // effects live in world space; the frame is the camera window (ox/oy scroll it)
+  fxFrame = PFX.createFrame(LW, LH); fxImg = new ImageData(LW, LH); fxCanvas.width = LW; fxCanvas.height = LH;
+}
+function spawnFx(name, o) {
+  const mod = PFX.mods[name];
+  if (!mod) return null;
+  const fx = PFX.createFx(mod, o);
+  const rec = { fx, follow: o.follow || null, travel: o.travel || null, stopAt: o.stopAfter || 0 };
+  live.push(rec);
+  return rec;
+}
+function fxForEvent(e) {
+  const box = e.box;
+  if (box) {
+    const k = box.k, f = anim.to[k], tgt = anim.to[other(k)], list = FX_FOR[box.sid] || [];
+    const flip = box.dir < 0;
+    list.forEach(([name, o]) => {
+      const base = { x: wlx(f.x), y: wly(f.y) + (o.dy || 0), flip, seed: o.seed != null ? o.seed + G.turn : (G.turn * 7 + name.length) % 97 };
+      if (o.pal) base.palette = o.pal;
+      else if (k === "lulu") { base.palette = METAL; base.sparks = METAL_SPARKS; }
+      if (o.reach) base.reach = o.reach;
+      if (o.self) base.y = wly(f.y + BODY[k].h * 0.5);
+      if (o.at === "target") { base.x = wlx(tgt.x); base.y = wly(tgt.y); }
+      if (o.at === "mid") { base.x = Math.round((wlx(box.bx.x0) + wlx(box.bx.x1)) / 2); base.y = FLW; }
+      if (o.travel) {
+        base.x = wlx(f.x); base.y = wly(f.y + 70);
+        const to = box.dir > 0 ? wlx(box.bx.x1) : wlx(box.bx.x0);
+        const r = spawnFx(name, Object.assign(base, { stopAfter: 0.45 }));
+        if (r) r.travel = { x0: base.x, x1: to, t: 0, d: 0.4 };
+        return;
+      }
+      spawnFx(name, Object.assign(base, { stopAfter: o.stopAfter || 0 }));
+    });
+  }
+  if (e.spark) {
+    const k = e.box ? other(e.box.k) : null;
+    const big = (e.pops || []).some(p => p.t === "COUNTER");
+    spawnFx(big ? "critHit" : "hitSpark", { x: wlx(e.spark.x), y: wly(e.spark.y - BODY[k || "lulu"].h * 0.6), flip: e.box && e.box.dir < 0, palette: k === "lulu" ? ORANGE_RAMP : METAL });
+  }
+  if (e.clash) spawnFx("parry", { x: wlx(e.clash.x), y: wly(e.clash.y), palette: METAL, height: 0, seed: G.turn });
+}
+function updateFx(now, F) {
+  const dt = Math.min(0.05, lastNow ? (now - lastNow) / 1000 : 0.016);
+  lastNow = now;
+  KEYS.forEach(k => {
+    const f = F[k];
+    if (f.chill && !frozenFx[k]) frozenFx[k] = spawnFx("frozen", { x: wlx(f.x), y: wly(f.y), palette: PFX.PAL.ice, follow: k });
+    if (!f.chill && frozenFx[k]) { frozenFx[k].fx.stop(); frozenFx[k] = null; }
+  });
+  fxFrame.ox = camX; fxFrame.oy = camY;
+  PFX.clearFrame(fxFrame);
+  if (!live.length) { fxCtx.clearRect(0, 0, LW, LH); return; }
+  live.forEach(r => {
+    r.fx.update(dt);
+    if (r.follow) { r.fx.options.x = wlx(F[r.follow].x); r.fx.options.y = wly(F[r.follow].y); }
+    if (r.travel) { r.travel.t += dt; const u = Math.min(1, r.travel.t / r.travel.d); r.fx.options.x = Math.round(r.travel.x0 + (r.travel.x1 - r.travel.x0) * u); }
+    if (r.stopAt && r.fx.t >= r.stopAt) r.fx.stop();
+    r.fx.draw(fxFrame);
+  });
+  live = live.filter(r => !r.fx.done());
+  PFX.composite(fxFrame, fxImg.data, null);
+  fxCtx.putImageData(fxImg, 0, 0);
+}
+
+function frame(now) {
+  try { drawFrame(now); } catch (err) { console.error(err); clearFx(); }
+  requestAnimationFrame(frame);
+}
+function drawFrame(now) {
+  let F = G.f, flashKey = null;
+  if (anim && anim.cur) {
+    const t = Math.min(1, (now - anim.t0) / (TUNE.eventMs * 0.55)), te = 1 - Math.pow(1 - t, 3), Fc = {};
+    KEYS.forEach(k => { const a = anim.from[k], b = anim.to[k]; Fc[k] = { x: a.x + (b.x - a.x) * te, y: a.y + (b.y - a.y) * te }; });
+    updateCamera(Fc);
+  } else updateCamera(F);
+  lc.imageSmoothingEnabled = false;
+  lc.clearRect(0, 0, LW, LH);
+  lc.drawImage(background(), camX, camY, LW, LH, 0, 0, LW, LH);
+  const groundV = FLW - camY;
+  snow.forEach(p => { p.y += p.s; p.x -= p.s * 0.4; if (p.y > 260) p.y = 0; if (p.x < 0) p.x = 600; const sx = Math.round(p.x) % LW, sy = Math.round(p.y) % LH; if (sy < groundV) { lc.fillStyle = p.s > 0.3 ? "#e9f3ff" : "#5d7ea8"; lc.fillRect(sx, sy, 1, 1); } });
+  if (anim && anim.cur) {
+    if (lastEvent !== anim.cur) { lastEvent = anim.cur; fxForEvent(anim.cur); }
+    const t = Math.min(1, (now - anim.t0) / (TUNE.eventMs * 0.55));
+    const te = 1 - Math.pow(1 - t, 3);
+    F = {};
+    KEYS.forEach(k => { const a = anim.from[k], b = anim.to[k]; F[k] = Object.assign({}, b, { x: a.x + (b.x - a.x) * te, y: a.y + (b.y - a.y) * te }); });
+    (anim.cur.trail || []).forEach(k => {
+      const a = anim.from[k], f = F[k];
+      if (k === "lulu") {   // after-images: the knight's own silhouette left behind along the charge, fading
+        const fade = 1 - Math.min(1, (now - anim.t0) / (TUNE.eventMs * 0.9));
+        for (let i = 1; i <= 3; i++) drawFighterLow(k, Object.assign({}, f, { x: a.x + (f.x - a.x) * (i / 4) }), 0.12 * i * fade);
+        return;
+      }
+      lc.fillStyle = "rgba(255,138,42,.5)"; for (let x = Math.min(lx(a.x), lx(f.x)); x <= Math.max(lx(a.x), lx(f.x)); x += 2) lc.fillRect(x, groundV - 2 - (x % 3), 2, 1);
+    });
+    if (anim.cur.spark && now - anim.t0 < 110) flashKey = anim.cur.box ? other(anim.cur.box.k) : null;
+  }
+  if (!anim && peek) {
+    const pf = G.f[peek.k], po = G.f[other(peek.k)], ps = peek.s, pc = peek.k === "yeti" ? C.orange : C.ice;
+    if (ps.box) dashRect(boxOf(pf, po, ps), pc, peek.k === "yeti" ? "rgba(255,138,42,.16)" : "rgba(143,227,255,.14)");
+    if (ps.pose) drawFighterLow(peek.k, Object.assign({}, pf, { pose: ps.pose }), 0.35);
+  }
+  if (!anim && !G.over && sel) {
+    const s = sel.s, f = G.f.lulu, o = G.f.yeti;
+    if (s.type === "move") {
+      const { tx, ty } = targetOf("lulu", s, sel.p);
+      lc.fillStyle = "rgba(143,227,255,.7)";
+      for (let i = 1; i < 16; i += 2) { const t = i / 16, x = f.x + (tx - f.x) * t, y = f.y + (ty - f.y) * t + (s.jump ? Math.sin(t * Math.PI) * 70 : 0) + 60; lc.fillRect(lx(x), ly(y), 1, 1); }
+      drawFighterLow("lulu", Object.assign({}, f, { x: tx, y: ty, pose: s.pose || (ty > 0 ? "air" : "walk"), dir: tx < o.x ? 1 : -1 }), 0.35);
+    } else if (s.guard) {
+      drawFighterLow("lulu", Object.assign({}, f, { pose: s.parry && sel.h === "low" ? s.poseLow : s.pose }), 0.35);
+    } else {
+      dashRect(boxOf(f, o, s), C.ice, "rgba(143,227,255,.14)");
+      drawFighterLow("lulu", Object.assign({}, f, { pose: s.pose }), 0.35);
+    }
+  }
+  ["yeti", "lulu"].forEach(k => {
+    const f = F[k];
+    const e = emo(k, f.san);
+    drawFighterLow(k, f, 1, flashKey === k, e);
+    pixText(lc, e.name, lx(f.x), groundV + 7, e.extreme ? C.gold : (k === "lulu" ? C.ice : C.orange), true);
+    if (k === "yeti" && !anim && !G.over && !replay) {
+      const tl = yetiTell(), top = ly(f.y + BODY[k].h) - 26;
+      const cx = w => clamp(lx(f.x), Math.ceil(w * 2) + 2, Math.max(Math.ceil(w * 2) + 2, LW - Math.ceil(w * 2) - 2));
+      if (tl.mood) pixText(lc, tl.mood, cx(tl.mood.length), top, AURA.yeti[e.id] || "#ff8a2a", true);
+      if (tl.habit) pixText(lc, tl.habit, cx(tl.habit.length), top - 7, "#ffd23a", true);
+    }
+    if (!anim && (hover === k || (G.tut === 0 && k === "yeti"))) {
+      const top = ly(f.y + BODY[k].h) - 10 - Math.round(Math.sin(now / 150));
+      lc.fillStyle = C.gold;
+      for (let i = 0; i < 3; i++) lc.fillRect(lx(f.x) - 2 + i, top + i, 5 - i * 2, 1);
+      pixText(lc, "READ", lx(f.x), top - 7, C.gold, true);
+    }
+  });
+  updateFx(now, F);
+  lc.drawImage(fxCanvas, 0, 0);
+  fx = fx.filter(p => now - p.t0 < 900);
+  fx.forEach(p => {
+    if (p.spark) return;
+    const t = (now - p.t0) / 900;
+    if (t > 0.85 && Math.floor(now / 60) % 2) return;
+    pixText(lc, p.t, lx(p.x), ly(p.y) - Math.round(t * 8), p.c, true);
+  });
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(low, 0, 0, cv.width, cv.height);
+}
+
+function pickAt(ev) {
+  const r = cv.getBoundingClientRect();
+  const vx = (ev.clientX - r.left) / r.width * LW, vy = (ev.clientY - r.top) / r.height * LH;
+  const x = (vx + camX) * PX, wy = (FLW - (vy + camY)) * PX;
+  for (const k of KEYS) {
+    const h = hurt(G.f[k]);
+    if (x >= h.x0 - 14 && x <= h.x1 + 14 && wy >= h.y0 - 14 && wy <= h.y1 + 20) return k;
+  }
+  return null;
+}
+cv.addEventListener("mousemove", ev => { hover = pickAt(ev); cv.classList.toggle("pointer", !!hover); });
+cv.addEventListener("mouseleave", () => { hover = null; });
+cv.addEventListener("click", ev => { const k = pickAt(ev); if (k) { if (inspKey === k) closeInsp(); else openInsp(k); } else closeInsp(); });
+
+document.addEventListener("keydown", e => {
+  if (e.key === "+" || e.key === "=") { zoomStep(1); return; }
+  if (e.key === "-" || e.key === "_") { zoomStep(-1); return; }
+  if (e.key === "0") { cam.auto = true; setZoom(cam.scale, false); return; }
+  if (e.key === "Escape") { if (replay) return endReplay(); closeInsp(); peek = null; renderEnemy(); if (!busy) { sel = null; renderMoves(); } }
+  if (busy || G.over || !$("intro").hidden || !$("endBox").hidden) return;
+  if (e.target && e.target.tagName === "INPUT" && e.target.type !== "range") return;
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); commit(); return; }
+  const id = KEYMAP[e.key.toLowerCase()];
+  if (id) { pickLulu(id === "fj" ? fjNow() : SKILLS.lulu.find(x => x.id === id)); return; }
+  if (sel && sel.s.grab && ["ArrowLeft", "ArrowRight", "ArrowUp"].includes(e.key)) { e.preventDefault(); if (e.key === "ArrowUp") sel.dash = !sel.dash; else sel.tdir = e.key === "ArrowRight" ? "fwd" : "back"; renderMoves(); return; }
+  if ((e.key === "ArrowUp" || e.key === "ArrowDown") && sel && sel.s.parry) { e.preventDefault(); sel.h = e.key === "ArrowUp" ? "high" : "low"; renderMoves(); return; }
+  if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && sel && sel.s.parry) { e.preventDefault(); sel.p = clamp(sel.p + (e.key === "ArrowRight" ? 1 : -1), 1, 20); renderMoves(); return; }
+  if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && sel && sel.s.type === "move" && sel.s !== HOLD) {
+    e.preventDefault();
+    const [lo, hi] = paramRange("lulu", sel.s), step = e.shiftKey ? 50 : 10;
+    const towardRight = G.f.yeti.x > G.f.lulu.x;   // slider value is "toward the Yeti"
+    const d = (e.key === "ArrowRight") === towardRight ? step : -step;
+    sel.p = clamp(sel.p + d, lo, hi); renderMoves();
+  }
+});
+$("goBtn").addEventListener("click", commit);
+$("zoomIn").addEventListener("click", () => zoomStep(1));
+$("zoomOut").addEventListener("click", () => zoomStep(-1));
+$("zoomAuto").addEventListener("click", () => { cam.auto = true; setZoom(cam.scale, false); });
+cv.addEventListener("wheel", ev => { ev.preventDefault(); zoomStep(ev.deltaY < 0 ? 1 : -1); }, { passive: false });
+$("logHead").addEventListener("click", () => { $("logBox").classList.toggle("min"); $("logTog").innerHTML = $("logBox").classList.contains("min") ? "+" : "&minus;"; });
+$("startBtn").addEventListener("click", () => { $("intro").hidden = true; if (G.tut != null) tutEnd(); });
+$("tutBtn").addEventListener("click", tutStart);
+$("skipRp").addEventListener("click", endReplay);
+$("helpBtn").addEventListener("click", () => { $("intro").hidden = false; });
+$("resetBtn").addEventListener("click", () => { $("endBox").hidden = true; closeInsp(); newGame(); });
+$("againBtn").addEventListener("click", () => { $("endBox").hidden = true; closeInsp(); newGame(); });
+$("replayBtn").addEventListener("click", startReplay);
+window.TUNE = TUNE;
+window.game = { dbg: { resolve, SKILLS, fresh, setG: g => { G = g; } }, startReplay, get replaying() { return !!replay; }, get state() { return G; }, commit, aiPick, newGame, openInsp, get busy() { return busy; } };
+setZoom(4, false);
+newGame();
+loadSheets();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
